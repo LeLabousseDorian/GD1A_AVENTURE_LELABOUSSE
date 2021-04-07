@@ -1,0 +1,158 @@
+<!doctype html> 
+<html lang="en"> 
+<head> 
+    <meta charset="UTF-8" />
+    <title>Making your first Phaser 3 Game - Part 10</title>
+    <script src="//cdn.jsdelivr.net/npm/phaser@3.11.0/dist/phaser.js"></script>
+    <style type="text/css">
+        body {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+
+<script type="text/javascript">
+
+
+var x = 300;
+var y = 1006;
+var playerSpeed = 600;
+var random = 0;
+var cursors;
+var scene = 1;
+
+var sceneText;
+var playerXText;
+var playerYText;
+
+var platforms;
+var player;
+
+class Scene1 extends Phaser.Scene {
+    
+    constructor(){
+        super("scene1");
+    }
+    
+    preload(){
+        this.load.image('sky', "assets/sky_ph.png");
+        this.load.image('item', "assets/item_ph.png");
+        this.load.image('coin', "assets/coin_ph.png");
+        this.load.image('platform', 'assets/sol_ph.png');
+        this.load.image('player', 'assets/player_ph.png');
+    }
+
+    create(){
+        this.add.image(960, 540, 'sky');
+        this.add.image(960, 540, 'item');
+        
+        platforms = this.physics.add.staticGroup();
+        
+        platforms.create(960, 1055, 'platform');
+        
+        player = this.physics.add.image(x, y, 'player');
+        player.setCollideWorldBounds(true);
+        
+        cursors = this.input.keyboard.createCursorKeys();
+        sceneText = this.add.text(16, 16, 'Scene '+ scene + ': ' + random, { fontSize: '32px', fill: '#fff' });
+        playerXText = this.add.text(16, 48, 'X: '+ player.x, { fontSize: '32px', fill: '#fff' });
+        playerYText = this.add.text(16, 80, 'Y: '+ player.y, { fontSize: '32px', fill: '#fff' });
+        this.physics.add.collider(player, platforms);
+    }
+
+    update(){
+        if (cursors.left.isDown){
+            player.setVelocityX(-playerSpeed);
+        }
+        else if (cursors.right.isDown){
+            player.setVelocityX(playerSpeed);
+        }
+        
+        else{
+            player.setVelocityX(0);
+        }
+        
+        if (player.x >1890 && player.y > 1000){
+            scene = 2;
+            this.scene.start('scene2');
+        }
+
+        playerXText.setText('X: '+ player.x);
+        playerYText.setText('Y: '+ Math.round(player.y));
+    }
+}
+
+
+class Scene2 extends Phaser.Scene {
+    
+    constructor(){
+        super("scene2")
+    }
+    
+
+    preload(){
+
+    }
+
+    create(){
+        this.add.image(960, 540, 'sky');
+        this.add.image(400,300, 'item');
+        platforms = this.physics.add.staticGroup();
+        
+        platforms.create(960, 1055, 'platform');
+
+        player = this.physics.add.image(x, y, 'player');
+        player.setCollideWorldBounds(true);
+
+        cursors = this.input.keyboard.createCursorKeys();
+        sceneText = this.add.text(16, 16, 'Scene '+ scene + ': ' + random, { fontSize: '32px', fill: '#fff' });
+        playerXText = this.add.text(16, 48, 'X: '+ player.x, { fontSize: '32px', fill: '#fff' });
+        playerYText = this.add.text(16, 80, 'Y: '+ player.y, { fontSize: '32px', fill: '#fff' });
+        this.physics.add.collider(player, platforms);
+    }
+    
+    update(){
+        if (cursors.left.isDown){
+            player.setVelocityX(-playerSpeed);
+        }
+        else if (cursors.right.isDown){
+            player.setVelocityX(playerSpeed);
+        }
+        
+        else{
+            player.setVelocityX(0);
+        }
+        
+        if (player.x >1890 && player.y > 1000){
+            scene = 1;
+            this.scene.start('scene1');
+        }
+
+        playerXText.setText('X: '+ player.x);
+        playerYText.setText('Y: '+ Math.round(player.y));
+    }
+}
+
+var config = {
+    type: Phaser.AUTO,
+    width: 1920,
+    height: 1080,
+    physics: {
+        default: 'arcade',
+        arcade: {
+            gravity: { y: 300 },
+            debug: true
+        }
+    },
+    scene: [Scene1, Scene2]
+};
+    
+var game = new Phaser.Game(config);
+/*
+    this.scene.start("menu", (maVar : 12, variable : "random"))
+*/
+</script>
+
+</body>
+</html>
