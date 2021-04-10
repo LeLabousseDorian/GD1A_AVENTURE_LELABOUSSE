@@ -5,12 +5,36 @@ class Scene2 extends Phaser.Scene {
     }
 
     init(data){
-        this.x = 1920*(1-data.playerX/1920);
-        this.y = 1080*(1-data.playerY/1080);
+        if (data.playerX/1920 < data.playerY/1080 && data.playerX/1920 < 1-data.playerY/1080){
+            this.x = 1920*(1-data.playerX/1920);
+            this.y = data.playerY;
+        }
+
+        else if (1-data.playerX/1920 < data.playerY/1080 && 1-data.playerX/1920 < 1-data.playerY/1080){
+            this.x = 1920*(1-data.playerX/1920);
+            this.y = data.playerY;
+        }
+
+        else{
+            this.y = 1080*(1-data.playerY/1080);
+            this.x = data.playerX;
+        }
 
         //FIX Get rid of the if pls
-        if (this.x < 40){
-            this.x = 40
+        if (this.x < 74){
+            this.x = 74;
+        }
+
+        if (this.x > 1846){
+            this.x = 1846;
+        }
+
+        if (this.y < 74){
+            this.y = 74;
+        }
+
+        if (this.y > 1006){
+            this.y = 1006;
         }
     }
 
@@ -20,10 +44,6 @@ class Scene2 extends Phaser.Scene {
 
         this.add.image(960, 540, 'sky');
         this.add.image(400,300, 'item');
-
-        //Platform
-        this.platforms = this.physics.add.staticGroup();
-        this.platforms.create(960, 1055, 'platform');
 
         this.player = this.physics.add.image(this.x, this.y, 'player');
         this.player.setCollideWorldBounds(true);
@@ -51,8 +71,15 @@ class Scene2 extends Phaser.Scene {
             this.control.movementJ(this.control.inputJoueur(this.cursors, this.inputP), this.player, this.playerSpeed, this.maxSpeed)[0],//X
             this.control.movementJ(this.control.inputJoueur(this.cursors, this.inputP), this.player, this.playerSpeed, this.maxSpeed)[1]);//Y
 
+        if (this.player.y > 1055){
+            actualScene = 1;
+            this.control.resetControl(this.cursors);
+            this.scene.start('scene1', {playerX: this.player.x, playerY: this.player.y});
+        }
+
         if (this.player.x < 25){
             actualScene = 1;
+            this.control.resetControl(this.cursors);
             this.scene.start('scene1', {playerX: this.player.x, playerY: this.player.y});
         }
 

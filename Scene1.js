@@ -6,14 +6,24 @@ class Scene1 extends Phaser.Scene {
     
     init(data){
         
-        this.x = 1920*(1-data.playerX/1920);
-        this.y = 1080*(1-data.playerY/1080);
-
-        if (data.playerX == null){
-            this.x = 300;
-            this.y = 1006;
+        if (data.playerX/1920 < data.playerY/1080 && data.playerX/1920 < 1-data.playerY/1080){
+            this.x = 1920*(1-data.playerX/1920);
+            this.y = data.playerY;
         }
+
+        else if (1-data.playerX/1920 < data.playerY/1080 && 1-data.playerX/1920 < 1-data.playerY/1080){
+            this.x = 1920*(1-data.playerX/1920);
+            this.y = data.playerY;
+        }
+
+        
+        else{
+            this.y = 1080*(1-data.playerY/1080);
+            this.x = data.playerX;
+        }
+
         //FIX Get rid of the if pls
+        
         if (this.x < 74){
             this.x = 74
         }
@@ -21,6 +31,21 @@ class Scene1 extends Phaser.Scene {
         if (this.x > 1846){
             this.x = 1846
         }
+
+        if (this.y < 74){
+            this.y = 74;
+        }
+
+        if (this.y > 1006){
+            this.y = 1006;
+        }
+
+        if (data.playerX == null){
+            this.x = 300;
+            this.y = 1006;
+        }
+
+
     }
 
     preload(){
@@ -75,8 +100,15 @@ class Scene1 extends Phaser.Scene {
     }
     
     update(){
+        if (this.player.y < 25){
+            actualScene = 2;
+            this.control.resetControl(this.cursors);
+            this.scene.start('scene2', {playerX: this.player.x , playerY: this.player.y})
+        }
+
         if (this.player.x >1895){
             actualScene = 2;
+            this.control.resetControl(this.cursors);
             this.scene.start('scene2', {playerX: this.player.x , playerY: this.player.y})
         }
 
@@ -87,7 +119,7 @@ class Scene1 extends Phaser.Scene {
 
         
 
-        this.sceneText.setText('Scene '+ actualScene + ': ' + this.player);
+        this.sceneText.setText('Scene '+ actualScene + ': ' + this.cursors.left.isDown);
         this.playerXText.setText('X: '+ Math.round(this.player.x));
         this.playerYText.setText('Y: '+ Math.round(this.player.y));
         this.inputText.setText('Right: ' + this.inputP[0] + ' Left: ' + this.inputP[1] + ' Down: ' + this.inputP[2] + ' Up: ' + this.inputP[3]);
@@ -102,6 +134,5 @@ class Scene1 extends Phaser.Scene {
     collectCoin(player, coins){
         coins.destroy();
     }
-
 
 }

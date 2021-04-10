@@ -87,4 +87,22 @@ class Control extends Phaser.Scene{
 
         return [player.body.velocity.x, player.body.velocity.y];
     }
+
+    resetControl(cursors){
+        if(cursors.left.isDown){
+            cursors.left.isDown = false;
+        }
+
+        if(cursors.right.isDown){
+            cursors.right.isDown = false;
+        }
+
+        if(cursors.up.isDown){
+            cursors.up.isDown = false;
+        }
+
+        if(cursors.down.isDown){
+            cursors.down.isDown = false;
+        }
+    }
 }
