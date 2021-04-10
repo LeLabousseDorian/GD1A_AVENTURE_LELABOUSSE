@@ -7,6 +7,7 @@
     <script type="text/javascript" src= "Scene1.js"></script>
     <script type="text/javascript" src= "Scene2.js"></script>
     <script type="text/javascript" src= "Ennemi.js"></script>
+    <script type="text/javascript" src= "Control.js"></script>
     <style type="text/css">
         body {
             margin: 0;
@@ -17,11 +18,10 @@
 
 <script type="text/javascript">
 
+var actualScene = 1;
 var x = 300;
 var y = 1006;
-var random = 0;
 
-var actualScene = 1;
 
 var config = {
     type: Phaser.AUTO,
@@ -34,13 +34,11 @@ var config = {
             debug: true
         }
     },
-    scene: [Scene1, Scene2]
+    scene: [Scene1, Scene2, Control]
 };
-    
+
 var game = new Phaser.Game(config);
-/*
-    this.scene.start("menu", (maVar : 12, variable : "random"))
-*/
+
 </script>
 
 </body>

@@ -5,17 +5,19 @@ class Scene2 extends Phaser.Scene {
     }
 
     init(data){
-        this.playerSpeed = data.playerSpeed;
-        this.camera = data.camera;
-    }
+        this.x = 1920*(1-data.playerX/1920);
+        this.y = 1080*(1-data.playerY/1080);
 
-    preload(){
-
+        //FIX Get rid of the if pls
+        if (this.x < 40){
+            this.x = 40
+        }
     }
 
     create(){
-        
-        this.debutScene = true;
+        this.control = this.scene.get('control');
+        this.inputP = [false, false, false, false]; //Right, Left, Down, Up
+
         this.add.image(960, 540, 'sky');
         this.add.image(400,300, 'item');
 
@@ -23,9 +25,15 @@ class Scene2 extends Phaser.Scene {
         this.platforms = this.physics.add.staticGroup();
         this.platforms.create(960, 1055, 'platform');
 
+        this.player = this.physics.add.image(this.x, this.y, 'player');
+        this.player.setCollideWorldBounds(true);
+
+        this.maxSpeed = 600;
+        this.playerSpeed = this.maxSpeed;
+
         //Input
         this.cursors = this.input.keyboard.createCursorKeys();
-
+        
         this.sceneText = this.add.text(16, 16, 'Scene '+ actualScene + ': ' + this.random, { fontSize: '32px', fill: '#ddd' });
         this.playerXText = this.add.text(16, 48, 'X: '+ this.player.x, { fontSize: '32px', fill: '#ddd' });
         this.playerYText = this.add.text(16, 80, 'Y: '+ this.player.y, { fontSize: '32px', fill: '#ddd' });
@@ -34,115 +42,24 @@ class Scene2 extends Phaser.Scene {
         
         //Collider
         this.physics.add.collider(this.player, this.platforms);
+        this.camera = this.cameras.main.setSize(1920,1080);
     }
     
     update(){
 
-        if (this.debutScene){
-            this.debutScene = false;
-            this.camera.fadeIn(101);
+        this.player.setVelocity(
+            this.control.movementJ(this.control.inputJoueur(this.cursors, this.inputP), this.player, this.playerSpeed, this.maxSpeed)[0],//X
+            this.control.movementJ(this.control.inputJoueur(this.cursors, this.inputP), this.player, this.playerSpeed, this.maxSpeed)[1]);//Y
+
+        if (this.player.x < 25){
+            actualScene = 1;
+            this.scene.start('scene1', {playerX: this.player.x, playerY: this.player.y});
         }
 
-        if (this.cursors.left.isDown){
-            this.player.setVelocityX(-this.playerSpeed);
-        }
-        else if (this.cursors.right.isDown){
-            this.player.setVelocityX(this.playerSpeed);
-        }
-        
-        else{
-            this.player.setVelocityX(0);
-        }
-        
         this.sceneText.setText('Scene '+ actualScene + ': ' + this.player);
         this.playerXText.setText('X: '+ Math.round(this.player.x));
         this.playerYText.setText('Y: '+ Math.round(this.player.y));
         this.velocityText.setText('X: ' + this.player.body.velocity.x + ' Y: ' + this.player.body.velocity.y);
     }
 
-    inputJoueur(cursors, inputP){
-        //Input
-        if (cursors.right.isDown){
-            inputP[0] = true;
-        }
-
-        if (cursors.right.isUp){
-            inputP[0] = false;
-        }
-
-        if (cursors.left.isDown){
-            inputP[1] = true;
-        }
-
-        if (cursors.left.isUp){
-            inputP[1] = false;
-        }
-
-        if (cursors.down.isDown){
-            inputP[2] = true;
-        }
-
-        if (cursors.down.isUp){
-            inputP[2] = false;
-        }
-
-        if (cursors.up.isDown){
-            inputP[3] = true;
-        }
-
-        if (cursors.up.isUp){
-            inputP[3] = false;
-        }
-
-        return (inputP);
-    }
-
-    movementJ(inputP, player, playerSpeed, maxSpeed){
-        //Logic
-
-        //Si le joueur se déplace en diagonale, sa vitesse est réduite
-        if (player.body.velocity.x != 0 && player.body.velocity.y != 0){
-            playerSpeed = maxSpeed*0.66;
-        }
-
-        else{
-            playerSpeed = maxSpeed;
-        }
-
-        if (inputP[0]){
-            player.setVelocityX(playerSpeed);
-        }
-        
-        if (inputP[1]){
-            player.setVelocityX(-playerSpeed);
-        }
-
-        if (!inputP[0] && !inputP[1]){
-            player.setVelocityX(0);
-        }
-
-        if (inputP[0] && inputP[1]){
-            player.setVelocityX(0);
-        }
-
-        if (inputP[2]){
-            player.setVelocityY(playerSpeed);
-        }
-
-        if (inputP[3]){
-            player.setVelocityY(-playerSpeed);
-        }
-        
-        if (!inputP[2] && !inputP[3]){
-            player.setVelocityY(0);
-        }
-
-        if (inputP[2] && inputP[3]){
-            player.setVelocityY(0);
-        }
-
-        
-
-        return [player.body.velocity.x, player.body.velocity.y];
-    }
 }
