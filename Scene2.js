@@ -99,6 +99,16 @@ class Scene2 extends Phaser.Scene {
 
     movementJ(inputP, player, playerSpeed, maxSpeed){
         //Logic
+
+        //Si le joueur se déplace en diagonale, sa vitesse est réduite
+        if (player.body.velocity.x != 0 && player.body.velocity.y != 0){
+            playerSpeed = maxSpeed*0.66;
+        }
+
+        else{
+            playerSpeed = maxSpeed;
+        }
+
         if (inputP[0]){
             player.setVelocityX(playerSpeed);
         }
@@ -131,14 +141,7 @@ class Scene2 extends Phaser.Scene {
             player.setVelocityY(0);
         }
 
-        //Si le joueur se déplace en diagonale, sa vitesse est réduite
-        if (player.body.velocity.x != 0 && player.body.velocity.y != 0){
-            playerSpeed = maxSpeed*0.66;
-        }
-
-        else{
-            playerSpeed = maxSpeed;
-        }
+        
 
         return [player.body.velocity.x, player.body.velocity.y];
     }

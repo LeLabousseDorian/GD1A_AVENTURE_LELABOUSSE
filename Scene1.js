@@ -39,6 +39,7 @@ class Scene1 extends Phaser.Scene {
     }
     
     update(){
+        
         this.player.setVelocity(
             this.scene2.movementJ(this.scene2.inputJoueur(this.cursors, this.inputP), this.player,this.playerSpeed, this.maxSpeed)[0],
             this.scene2.movementJ(this.scene2.inputJoueur(this.cursors, this.inputP), this.player,this.playerSpeed, this.maxSpeed)[1]);
