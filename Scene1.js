@@ -13,7 +13,8 @@ class Scene1 extends Phaser.Scene {
     }
 
     create(){
-        this.inputP = [0, 0, 0, 0]; //Right, Left, Down, Up
+        this.scene2 = this.scene.get('scene2');
+        this.inputP = [false, false, false, false]; //Right, Left, Down, Up
         this.playerSpeed = 500;
         this.maxSpeed = 500
         this.add.image(960, 540, 'sky');
@@ -31,97 +32,28 @@ class Scene1 extends Phaser.Scene {
         this.playerXText = this.add.text(16, 48, 'X: '+ this.player.x, { fontSize: '32px', fill: '#ddd' });
         this.playerYText = this.add.text(16, 80, 'Y: '+ this.player.y, { fontSize: '32px', fill: '#ddd' });
         this.cameraText = this.add.text(16, 112, 'Camera: '+ this.camera, { fontSize: '32px', fill: '#ddd' });
-        this.inputText = this.add.text(16, 144, 'Right: ' + this.inputP[0] + ' Left: ' + this.inputP[1] + ' Down: ' + this.inputP[2] + ' Up: ' + this.inputP[3],{ fontSize: '32px', fill: '#ddd' });
+        this.inputText = this.add.text(16, 144, 'Right: ' + this.inputP[0] + ' Left: ' + this.inputP[1] + ' Down: ' + this.inputP[2] + ' Up: ' + this.inputP[3], { fontSize: '32px', fill: '#ddd' });
         this.velocityText = this.add.text(16, 176, 'X: ' + this.player.body.velocity.x + ' Y: ' + this.player.body.velocity.y, { fontSize: '32px', fill: '#ddd' });
         this.physics.add.collider(this.player, this.platforms);
         this.camera = this.cameras.main.setSize(1920,1080);
     }
     
     update(){
+        this.player.setVelocity(
+            this.scene2.movementJ(this.scene2.inputJoueur(this.cursors, this.inputP), this.player,this.playerSpeed, this.maxSpeed)[0],
+            this.scene2.movementJ(this.scene2.inputJoueur(this.cursors, this.inputP), this.player,this.playerSpeed, this.maxSpeed)[1]);
 
-
-
-        //Input
-        if (this.cursors.right.isDown){
-            this.inputP[0] = 1;
-        }
-
-        if (this.cursors.right.isUp){
-            this.inputP[0] = 0;
-        }
-
-        if (this.cursors.left.isDown){
-            this.inputP[1] = 1;
-        }
-
-        if (this.cursors.left.isUp){
-            this.inputP[1] = 0;
-        }
-
-        if (this.cursors.down.isDown){
-            this.inputP[2] = 1;
-        }
-
-        if (this.cursors.down.isUp){
-            this.inputP[2] = 0;
-        }
-
-        if (this.cursors.up.isDown){
-            this.inputP[3] = 1;
-        }
-
-        if (this.cursors.up.isUp){
-            this.inputP[3] = 0;
-        }
-
-
-
-        //Logic
-        if (this.inputP[0] == 1){
-            this.player.setVelocityX(this.playerSpeed);
-        }
-        
-        if (this.inputP[1] == 1){
-            this.player.setVelocityX(-this.playerSpeed);
-        }
-
-        if (this.inputP[0] == 0 && this.inputP[1] == 0){
-            this.player.setVelocityX(0);
-        }
-
-        if (this.inputP[2] == 1){
-            this.player.setVelocityY(this.playerSpeed);
-        }
-
-        if (this.inputP[3] == 1){
-            this.player.setVelocityY(-this.playerSpeed);
-        }
-        
-        if (this.inputP[2] == 0 && this.inputP[3] == 0){
-            this.player.setVelocityY(0);
-        }
-
-        //Si le joueur se déplace en diagonale, sa vitesse est réduite
-        if (this.player.body.velocity.x != 0 && this.player.body.velocity.y != 0){
-            this.playerSpeed = this.maxSpeed*0.66;
-        }
-
-        else{
-            this.playerSpeed = this.maxSpeed;
-        }
-
-        
         if (this.player.x >1890 && this.player.y > 1000){
             actualScene = 2;
             this.player.x -= 500;
-            this.inputP = [0, 0, 0, 0]
-            this.camera.fadeOut(100)
+            this.inputP = [0, 0, 0, 0];
+            this.camera.fadeOut(100);
             this.scene.transition({
                 target: 'scene2',
                 sleep: true,
                 duration: 100,
-                data: {player: this.player, camera: this.camera, sceneText: this.sceneText, playerSpeed: this.playerSpeed}
-            })
+                data: {camera: this.camera, sceneText: this.sceneText, playerSpeed: this.playerSpeed}
+            });
         }
 
         this.sceneText.setText('Scene '+ actualScene + ': ' + this.player);
@@ -130,4 +62,5 @@ class Scene1 extends Phaser.Scene {
         this.inputText.setText('Right: ' + this.inputP[0] + ' Left: ' + this.inputP[1] + ' Down: ' + this.inputP[2] + ' Up: ' + this.inputP[3]);
         this.velocityText.setText('X: ' + this.player.body.velocity.x + ' Y: ' + this.player.body.velocity.y);
     }
+
 }
