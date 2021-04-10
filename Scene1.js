@@ -5,47 +5,14 @@ class Scene1 extends Phaser.Scene {
     }
     
     init(data){
+        this.changeScene = this.scene.get('changeScene');
+
+        this.maxSpeed = data.maxSpeed;
+        this.playerSpeed = this.maxSpeed;
+
+        this.x = this.changeScene.positionScene(data.playerX, data.playerY)[0];
+        this.y = this.changeScene.positionScene(data.playerX, data.playerY)[1];
         
-        if (data.playerX/1920 < data.playerY/1080 && data.playerX/1920 < 1-data.playerY/1080){
-            this.x = 1920*(1-data.playerX/1920);
-            this.y = data.playerY;
-        }
-
-        else if (1-data.playerX/1920 < data.playerY/1080 && 1-data.playerX/1920 < 1-data.playerY/1080){
-            this.x = 1920*(1-data.playerX/1920);
-            this.y = data.playerY;
-        }
-
-        
-        else{
-            this.y = 1080*(1-data.playerY/1080);
-            this.x = data.playerX;
-        }
-
-        //FIX Get rid of the if pls
-        
-        if (this.x < 74){
-            this.x = 74
-        }
-
-        if (this.x > 1846){
-            this.x = 1846
-        }
-
-        if (this.y < 74){
-            this.y = 74;
-        }
-
-        if (this.y > 1006){
-            this.y = 1006;
-        }
-
-        if (data.playerX == null){
-            this.x = 300;
-            this.y = 1006;
-        }
-
-
     }
 
     preload(){
@@ -58,11 +25,11 @@ class Scene1 extends Phaser.Scene {
     }
 
     create(){
+        //Import des functions de la scene 'control'
         this.control = this.scene.get('control');
+
+        //Création des input du joueur, false par defaut
         this.inputP = [false, false, false, false]; //Right, Left, Down, Up
-        
-        this.maxSpeed = 1000;
-        this.playerSpeed = this.maxSpeed;
         
         this.add.image(960, 540, 'sky');
         this.add.image(960, 540, 'item');
@@ -80,8 +47,6 @@ class Scene1 extends Phaser.Scene {
         this.player = this.physics.add.image(this.x, this.y, 'player');
         this.player.setCollideWorldBounds(true);
         
-
-
         this.cursors = this.input.keyboard.createCursorKeys();
 
         this.sceneText = this.add.text(16, 16, 'Scene '+ actualScene + ': ' + this.random, { fontSize: '32px', fill: '#ddd' });
@@ -100,16 +65,17 @@ class Scene1 extends Phaser.Scene {
     }
     
     update(){
+        //Si le joueur est en haut
         if (this.player.y < 25){
             actualScene = 2;
             this.control.resetControl(this.cursors);
-            this.scene.start('scene2', {playerX: this.player.x , playerY: this.player.y})
+            this.scene.start('scene2', {playerX: this.player.x , playerY: this.player.y, maxSpeed: this.maxSpeed})
         }
-
+        //Si le joueur est a droite
         if (this.player.x >1895){
             actualScene = 2;
             this.control.resetControl(this.cursors);
-            this.scene.start('scene2', {playerX: this.player.x , playerY: this.player.y})
+            this.scene.start('scene2', {playerX: this.player.x , playerY: this.player.y, maxSpeed: this.maxSpeed})
         }
 
         //Player's movement

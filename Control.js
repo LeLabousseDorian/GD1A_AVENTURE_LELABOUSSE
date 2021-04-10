@@ -6,6 +6,7 @@ class Control extends Phaser.Scene{
 
     inputJoueur(cursors, inputP){
         //Input
+        
         if (cursors.right.isDown){
             inputP[0] = true;
         }
