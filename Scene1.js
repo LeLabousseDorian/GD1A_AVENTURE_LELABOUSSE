@@ -19,7 +19,6 @@ class Scene1 extends Phaser.Scene {
         this.load.image('sky', "assets/sky_ph.png");
         this.load.image('item', "assets/item_ph.png");
         this.load.image('coin', "assets/coin_ph.png");
-        this.load.image('platform', 'assets/sol_ph.png');
         this.load.image('player', 'assets/player_ph.png');
         this.load.image('ennemi', 'assets/ennemi_ph.png');
     }
@@ -33,14 +32,10 @@ class Scene1 extends Phaser.Scene {
         
         this.add.image(960, 540, 'sky');
         this.add.image(960, 540, 'item');
-        
-        this.platforms = this.physics.add.staticGroup();
-        
-        this.platforms.create(960, 1055, 'platform');
-        
+
         this.ennemis = this.add.group();
-        this.ennemi1 = this.ennemis.create(new Ennemi(this, 400, 1006));
-        this.ennemi2 = this.ennemis.create(new Ennemi(this, 800, 1006));
+        this.ennemi1 = this.ennemis.create(new Ennemi(this, 400, 700));
+        this.ennemi2 = this.ennemis.create(new Ennemi(this, 800, 400));
         
         this.coins = this.physics.add.group();
 
@@ -93,7 +88,9 @@ class Scene1 extends Phaser.Scene {
     }
 
     jump(player, ennemis){
-        this.coins.create(ennemis.x+50, ennemis.y+15, 'coin');
+        let randomx = Math.floor(Math.random() * 300)-150;
+        let randomy = Math.floor(Math.random() * 300)-150;
+        this.coins.create(ennemis.x+randomx, ennemis.y+randomy, 'coin');
         ennemis.destroy();
     }
 
@@ -101,4 +98,15 @@ class Scene1 extends Phaser.Scene {
         coins.destroy();
     }
 
+
+    /* X/Y to angle
+    deltaX = x2 - x1; ()
+    deltaY = y2 - y1;
+    deg = Math.atan2(deltaY, deltaX)*180.0/Math.PI;
+    */
+
+    /* Angle to X/Y
+    x += cos(257*pi/180)*17;
+    y += sin(257*pi/180)*17;
+    */
 }
