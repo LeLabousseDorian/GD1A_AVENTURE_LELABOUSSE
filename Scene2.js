@@ -12,7 +12,6 @@ class Scene2 extends Phaser.Scene {
 
         this.x = this.changeScene.positionScene(data.playerX, data.playerY)[0];
         this.y = this.changeScene.positionScene(data.playerX, data.playerY)[1];
-        
     }
 
     create(){
@@ -37,7 +36,6 @@ class Scene2 extends Phaser.Scene {
         this.sceneText = this.add.text(16, 16, 'Scene '+ actualScene + ': ' + this.random, { fontSize: '32px', fill: '#ddd' });
         this.playerXText = this.add.text(16, 48, 'X: '+ this.player.x, { fontSize: '32px', fill: '#ddd' });
         this.playerYText = this.add.text(16, 80, 'Y: '+ this.player.y, { fontSize: '32px', fill: '#ddd' });
-        this.cameraText = this.add.text(16, 112, 'Camera: '+ this.camera, { fontSize: '32px', fill: '#ddd' });
         this.velocityText = this.add.text(16, 176, 'X: ' + this.player.body.velocity.x + ' Y: ' + this.player.body.velocity.y, { fontSize: '32px', fill: '#ddd' });
         
         //Collider

@@ -8,6 +8,7 @@
     <script type="text/javascript" src= "Scene1.js"></script>
     <script type="text/javascript" src= "Scene2.js"></script>
     <script type="text/javascript" src= "Ennemi.js"></script>
+    <script type="text/javascript" src= "Coin.js"></script>
     <script type="text/javascript" src= "Control.js"></script>
     <script type="text/javascript" src= "ChangeScene.js"></script>
     <style type="text/css">
@@ -23,12 +24,14 @@
 var actualScene = 1;
 var x = 300;
 var y = 1006;
+var playerCoin = 100;
+var color = '#000'
 
 
 var config = {
     type: Phaser.AUTO,
-    width: 1920,
-    height: 1080,
+    width: 3200,
+    height: 2400,
     physics: {
         default: 'arcade',
         arcade: {

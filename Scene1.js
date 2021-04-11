@@ -21,6 +21,9 @@ class Scene1 extends Phaser.Scene {
         this.load.image('coin', "assets/coin_ph.png");
         this.load.image('player', 'assets/player_ph.png');
         this.load.image('ennemi', 'assets/ennemi_ph.png');
+
+        this.load.image('terrain_sheet', 'assets/terrain_sprite.png');
+        this.load.tilemapTiledJSON('map', 'testmap.json');
     }
 
     create(){
@@ -33,45 +36,84 @@ class Scene1 extends Phaser.Scene {
         this.add.image(960, 540, 'sky');
         this.add.image(960, 540, 'item');
 
+        this.map = this.make.tilemap({ key: 'map' });
+        this.tileset = this.map.addTilesetImage('terrain', 'terrain_sheet');
+
+        this.bot = this.map.createStaticLayer('bot', this.tileset, 0, 0);
+        this.top = this.map.createStaticLayer('top', this.tileset, 0, 0);
+
         this.ennemis = this.add.group();
-        this.ennemi1 = this.ennemis.create(new Ennemi(this, 400, 700));
-        this.ennemi2 = this.ennemis.create(new Ennemi(this, 800, 400));
-        
+        this.ennemi1 = new Ennemi(this, 400, 700);
+        this.ennemi2 = new Ennemi(this, 1400, 900);
+        this.ennemi3 = new Ennemi(this, 2500, 1400);
+
         this.coins = this.physics.add.group();
+
 
         this.player = this.physics.add.image(this.x, this.y, 'player');
         this.player.setCollideWorldBounds(true);
         
         this.cursors = this.input.keyboard.createCursorKeys();
 
-        this.sceneText = this.add.text(16, 16, 'Scene '+ actualScene + ': ' + this.random, { fontSize: '32px', fill: '#ddd' });
-        this.playerXText = this.add.text(16, 48, 'X: '+ this.player.x, { fontSize: '32px', fill: '#ddd' });
-        this.playerYText = this.add.text(16, 80, 'Y: '+ this.player.y, { fontSize: '32px', fill: '#ddd' });
-        this.cameraText = this.add.text(16, 112, 'Camera: '+ this.camera, { fontSize: '32px', fill: '#ddd' });
-        this.inputText = this.add.text(16, 144, 'Right: ' + this.inputP[0] + ' Left: ' + this.inputP[1] + ' Down: ' + this.inputP[2] + ' Up: ' + this.inputP[3], { fontSize: '32px', fill: '#ddd' });
-        this.velocityText = this.add.text(16, 176, 'X: ' + this.player.body.velocity.x + ' Y: ' + this.player.body.velocity.y, { fontSize: '32px', fill: '#ddd' });
+        this.sceneText = this.add.text(16, 16, 'Scene '+ actualScene + ': ' + this.random, { fontSize: '32px', fill: color }).setScrollFactor(0);
+        this.playerXText = this.add.text(16, 48, 'X: '+ this.player.x, { fontSize: '32px', fill: color }).setScrollFactor(0);
+        this.playerYText = this.add.text(16, 80, 'Y: '+ this.player.y, { fontSize: '32px', fill: color }).setScrollFactor(0);
+        this.inputText = this.add.text(16, 144, 'Right: ' + this.inputP[0] + ' Left: ' + this.inputP[1] + ' Down: ' + this.inputP[2] + ' Up: ' + this.inputP[3], { fontSize: '32px', fill: color }).setScrollFactor(0);
+        this.velocityText = this.add.text(16, 176, 'X: ' + this.player.body.velocity.x + ' Y: ' + this.player.body.velocity.y, { fontSize: '32px', fill: color }).setScrollFactor(0);
 
         this.physics.add.collider(this.player, this.platforms);
-        this.physics.add.overlap(this.player, this.ennemis, this.jump, null, this);
+        this.physics.add.collider(this.player, this.ennemis, this.killEnnemi, null, this);
         this.physics.add.collider(this.ennemis, this.platforms);
         this.physics.add.overlap(this.player, this.coins, this.collectCoin, null, this);
 
+        this.physics.add.collider(this.player, this.top);
+
+        this.top.setCollisionByProperty({collides:true});
+        //this.top.setCollision([385, 306]);
+        //this.top.setCollisionByExclusion(-1, true);
+
+
         this.camera = this.cameras.main.setSize(1920,1080);
+        this.camera.startFollow(this.player, true, 0.08, 0.08);
+        this.camera.setBounds(0, 0, 3200, 2400);
+
+        var test = this;
+        var i = 0
+
+        this.ennemis.children.iterate(function (child) {
+            test.tweens.add({
+                targets: child,
+                x: child.x-300,
+                ease: 'Linear',
+                duration: 2000,
+                yoyo: true,
+                repeat: -1,
+            });
+
+            i++;
+
+            if (i == test.ennemis.length)
+            {
+                i = 0;
+            }
+
+        })
     }
-    
+
     update(){
-        //Si le joueur est en haut
+        /*Si le joueur est en haut
         if (this.player.y < 25){
             actualScene = 2;
             this.control.resetControl(this.cursors);
             this.scene.start('scene2', {playerX: this.player.x , playerY: this.player.y, maxSpeed: this.maxSpeed})
         }
         //Si le joueur est a droite
-        if (this.player.x >1895){
+        if (this.player.x > 3200-25){
             actualScene = 2;
             this.control.resetControl(this.cursors);
             this.scene.start('scene2', {playerX: this.player.x , playerY: this.player.y, maxSpeed: this.maxSpeed})
         }
+        */
 
         //Player's movement
         this.player.setVelocity(
@@ -79,15 +121,14 @@ class Scene1 extends Phaser.Scene {
             this.control.movementJ(this.control.inputJoueur(this.cursors, this.inputP), this.player,this.playerSpeed, this.maxSpeed)[1]);//Y
 
         
-
-        this.sceneText.setText('Scene '+ actualScene + ': ' + this.cursors.left.isDown);
+        this.sceneText.setText('Scene '+ actualScene + ': ' + playerCoin);
         this.playerXText.setText('X: '+ Math.round(this.player.x));
         this.playerYText.setText('Y: '+ Math.round(this.player.y));
         this.inputText.setText('Right: ' + this.inputP[0] + ' Left: ' + this.inputP[1] + ' Down: ' + this.inputP[2] + ' Up: ' + this.inputP[3]);
         this.velocityText.setText('X: ' + this.player.body.velocity.x + ' Y: ' + this.player.body.velocity.y);
     }
 
-    jump(player, ennemis){
+    killEnnemi(player, ennemis){
         let randomx = Math.floor(Math.random() * 300)-150;
         let randomy = Math.floor(Math.random() * 300)-150;
         this.coins.create(ennemis.x+randomx, ennemis.y+randomy, 'coin');
@@ -95,9 +136,10 @@ class Scene1 extends Phaser.Scene {
     }
 
     collectCoin(player, coins){
+        playerCoin+= 10
         coins.destroy();
     }
-
+    
 
     /* X/Y to angle
     deltaX = x2 - x1; ()
