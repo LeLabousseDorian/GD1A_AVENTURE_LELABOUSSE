@@ -13,7 +13,7 @@ class ChangeScene extends Phaser.Scene{
             x = (1920*(1-playerX/1920))-30;
             y = playerY;
         }
-
+        
         else if (1-playerX/1920 < playerY/1080 && 1-playerX/1920 < 1-playerY/1080){
             x = (1920*(1-playerX/1920))+30;
             y = playerY;

@@ -32,9 +32,6 @@ class Scene1 extends Phaser.Scene {
 
         //Création des input du joueur, false par defaut
         this.inputP = [false, false, false, false]; //Right, Left, Down, Up
-        
-        this.add.image(960, 540, 'sky');
-        this.add.image(960, 540, 'item');
 
         this.map = this.make.tilemap({ key: 'map' });
         this.tileset = this.map.addTilesetImage('terrain', 'terrain_sheet');
@@ -45,7 +42,7 @@ class Scene1 extends Phaser.Scene {
         this.ennemis = this.add.group();
         this.ennemi1 = new Ennemi(this, 400, 700);
         this.ennemi2 = new Ennemi(this, 1400, 900);
-        this.ennemi3 = new Ennemi(this, 2500, 1400);
+        this.ennemi3 = new Ennemi(this, 1000, 800);
 
         this.coins = this.physics.add.group();
 
@@ -71,7 +68,7 @@ class Scene1 extends Phaser.Scene {
         this.top.setCollisionByProperty({collides:true});
         //this.top.setCollision([385, 306]);
         //this.top.setCollisionByExclusion(-1, true);
-
+        
 
         this.camera = this.cameras.main.setSize(1920,1080);
         this.camera.startFollow(this.player, true, 0.08, 0.08);
@@ -101,6 +98,10 @@ class Scene1 extends Phaser.Scene {
     }
 
     update(){
+
+        if (this.ennemis.getLength() == 0){
+            this.add.image(960, 540, 'item');
+        }
         /*Si le joueur est en haut
         if (this.player.y < 25){
             actualScene = 2;
