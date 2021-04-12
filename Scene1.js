@@ -10,8 +10,11 @@ class Scene1 extends Phaser.Scene {
         this.maxSpeed = data.maxSpeed;
         this.playerSpeed = this.maxSpeed;
 
-        this.x = this.changeScene.positionScene(data.playerX, data.playerY)[0];
-        this.y = this.changeScene.positionScene(data.playerX, data.playerY)[1];
+        this.x = data.playerX;
+        this.y = data.playerY;
+
+        widthScreen = 3200;
+        heightScreen = 2400;
         
     }
 
@@ -21,7 +24,10 @@ class Scene1 extends Phaser.Scene {
         this.load.image('coin', "assets/coin_ph.png");
         this.load.image('player', 'assets/player_ph.png');
         this.load.image('ennemi', 'assets/ennemi_ph.png');
+        this.load.image('merchant', 'assets/merchant_ph.png');
 
+
+        //Tiled
         this.load.image('terrain_sheet', 'assets/terrain_sprite.png');
         this.load.tilemapTiledJSON('map', 'testmap.json');
     }
@@ -30,14 +36,21 @@ class Scene1 extends Phaser.Scene {
         //Import des functions de la scene 'control'
         this.control = this.scene.get('control');
 
-        //Création des input du joueur, false par defaut
-        this.inputP = [false, false, false, false]; //Right, Left, Down, Up
+        this.xAxis = 0;  //Stick xAxys
+        this.yAxis = 0;  //Stick xAxys
 
         this.map = this.make.tilemap({ key: 'map' });
         this.tileset = this.map.addTilesetImage('terrain', 'terrain_sheet');
 
         this.bot = this.map.createStaticLayer('bot', this.tileset, 0, 0);
-        this.top = this.map.createStaticLayer('top', this.tileset, 0, 0);
+        this.top = this.map.createDynamicLayer('top', this.tileset, 0, 0);
+
+        this.merchant = this.add.image(2125, 300, 'merchant');
+        this.boot = this.physics.add.image(2125, 400, 'item');
+        this.priceBoot = this.add.text(this.boot.x-30, this.boot.y+50, '150', { fontSize: '32px', fill: '#000' });
+
+        this.key = this.physics.add.image(1000, 800, 'item');
+
 
         this.ennemis = this.add.group();
         this.ennemi1 = new Ennemi(this, 400, 700);
@@ -45,7 +58,6 @@ class Scene1 extends Phaser.Scene {
         this.ennemi3 = new Ennemi(this, 1000, 800);
 
         this.coins = this.physics.add.group();
-
 
         this.player = this.physics.add.image(this.x, this.y, 'player');
         this.player.setCollideWorldBounds(true);
@@ -55,19 +67,36 @@ class Scene1 extends Phaser.Scene {
         this.sceneText = this.add.text(16, 16, 'Scene '+ actualScene + ': ' + this.random, { fontSize: '32px', fill: color }).setScrollFactor(0);
         this.playerXText = this.add.text(16, 48, 'X: '+ this.player.x, { fontSize: '32px', fill: color }).setScrollFactor(0);
         this.playerYText = this.add.text(16, 80, 'Y: '+ this.player.y, { fontSize: '32px', fill: color }).setScrollFactor(0);
-        this.inputText = this.add.text(16, 144, 'Right: ' + this.inputP[0] + ' Left: ' + this.inputP[1] + ' Down: ' + this.inputP[2] + ' Up: ' + this.inputP[3], { fontSize: '32px', fill: color }).setScrollFactor(0);
+        this.inputText = this.add.text(16, 144, 'Right: ' + inputP[0] + ' Left: ' + inputP[1] + ' Down: ' + inputP[2] + ' Up: ' + inputP[3], { fontSize: '32px', fill: color }).setScrollFactor(0);
         this.velocityText = this.add.text(16, 176, 'X: ' + this.player.body.velocity.x + ' Y: ' + this.player.body.velocity.y, { fontSize: '32px', fill: color }).setScrollFactor(0);
-
+        
+        //Collide
+        //Player
         this.physics.add.collider(this.player, this.platforms);
-        this.physics.add.collider(this.player, this.ennemis, this.killEnnemi, null, this);
-        this.physics.add.collider(this.ennemis, this.platforms);
+        this.physics.add.overlap(this.player, this.ennemis, this.killEnnemi, null, this);
         this.physics.add.overlap(this.player, this.coins, this.collectCoin, null, this);
-
         this.physics.add.collider(this.player, this.top);
+        this.physics.add.overlap(this.player, this.boot, this.getBoot, null, this);
+        this.physics.add.overlap(this.player, this.key, this.getKey, null, this);
+
+
+        //Ennemis
+        this.physics.add.collider(this.ennemis, this.platforms);
+
+        //Coin
+        this.physics.add.collider(this.coins, this.top)
+
 
         this.top.setCollisionByProperty({collides:true});
         //this.top.setCollision([385, 306]);
         //this.top.setCollisionByExclusion(-1, true);
+
+        this.top.setTileLocationCallback(59, 23, 1, 1, ()=>{
+            if (key){
+                actualScene = 2;
+                this.control.resetControl(this.cursors);
+                this.scene.start('scene2', {playerX: this.player.x , playerY: this.player.y, maxSpeed: this.maxSpeed})}
+        })
         
 
         this.camera = this.cameras.main.setSize(1920,1080);
@@ -95,50 +124,85 @@ class Scene1 extends Phaser.Scene {
             }
 
         })
+
     }
 
     update(){
 
+        let pad = Phaser.Input.Gamepad.Gamepad;
+    
+    
+        if(this.input.gamepad.total){   //Si une manette est connecté
+            pad = this.input.gamepad.getPad(0)  //pad récupère les inputs du joueur
+            this.xAxis = pad ? pad.axes[0].getValue() : 0;   //Si le stick est utilisé xAxys récupère la valeur sur l'axe X, sinon il est égale a 0
+            this.yAxis = pad ? pad.axes[1].getValue() : 0;   //Pareil pour l'axe Y
+    }
+
+
         if (this.ennemis.getLength() == 0){
-            this.add.image(960, 540, 'item');
+            this.map.removeTileAt(58, 22, {layer: this.top});
+            this.map.removeTileAt(59, 22, {layer: this.top});
+            this.map.removeTileAt(60, 22, {layer: this.top});
+            this.map.removeTileAt(58, 23, {layer: this.top});
+            this.map.removeTileAt(60, 23, {layer: this.top});
+            this.map.removeTileAt(58, 24, {layer: this.top});
+            this.map.removeTileAt(59, 24, {layer: this.top});
+            this.map.removeTileAt(60, 24, {layer: this.top});
         }
-        /*Si le joueur est en haut
-        if (this.player.y < 25){
+        /*
+        //Si le joueur est en haut
+        if (this.player.y < this.player.height){
             actualScene = 2;
             this.control.resetControl(this.cursors);
             this.scene.start('scene2', {playerX: this.player.x , playerY: this.player.y, maxSpeed: this.maxSpeed})
         }
         //Si le joueur est a droite
-        if (this.player.x > 3200-25){
+        if (this.player.x > widthScreen-this.player.width){
             actualScene = 2;
             this.control.resetControl(this.cursors);
             this.scene.start('scene2', {playerX: this.player.x , playerY: this.player.y, maxSpeed: this.maxSpeed})
-        }
-        */
+        }*/
+        
 
         //Player's movement
         this.player.setVelocity(
-            this.control.movementJ(this.control.inputJoueur(this.cursors, this.inputP), this.player,this.playerSpeed, this.maxSpeed)[0],//X
-            this.control.movementJ(this.control.inputJoueur(this.cursors, this.inputP), this.player,this.playerSpeed, this.maxSpeed)[1]);//Y
+            this.control.movementJ(this.control.inputJoueur(this.cursors, inputP, pad, this.xAxis, this.yAxis), this.player,this.playerSpeed, this.maxSpeed)[0],//X
+            this.control.movementJ(this.control.inputJoueur(this.cursors, inputP, pad, this.xAxis, this.yAxis), this.player,this.playerSpeed, this.maxSpeed)[1]);//Y
 
         
-        this.sceneText.setText('Scene '+ actualScene + ': ' + playerCoin);
+        this.sceneText.setText('Scene '+ actualScene + ': ' + this.xAxis);
         this.playerXText.setText('X: '+ Math.round(this.player.x));
         this.playerYText.setText('Y: '+ Math.round(this.player.y));
-        this.inputText.setText('Right: ' + this.inputP[0] + ' Left: ' + this.inputP[1] + ' Down: ' + this.inputP[2] + ' Up: ' + this.inputP[3]);
+        this.inputText.setText('Right: ' + inputP[0] + ' Left: ' + inputP[1] + ' Down: ' + inputP[2] + ' Up: ' + inputP[3]);
         this.velocityText.setText('X: ' + this.player.body.velocity.x + ' Y: ' + this.player.body.velocity.y);
     }
 
     killEnnemi(player, ennemis){
-        let randomx = Math.floor(Math.random() * 300)-150;
-        let randomy = Math.floor(Math.random() * 300)-150;
-        this.coins.create(ennemis.x+randomx, ennemis.y+randomy, 'coin');
+        let randomx = ennemis.x + Math.floor(Math.random() * 300)-150;
+        let randomy = ennemis.y + Math.floor(Math.random() * 300)-150;
+        this.coin = new Coin(this, 20, randomx, randomy);
         ennemis.destroy();
     }
 
     collectCoin(player, coins){
-        playerCoin+= 10
+        playerCoin += coins.getValue()
         coins.destroy();
+    }
+
+    getBoot(player, boots){
+
+        if (playerCoin >= 150){ 
+            playerCoin -= 150   
+            boots.destroy();
+            this.priceBoot.destroy();
+            boot = true;
+            this.maxSpeed += 250}
+        
+    }
+
+    getKey(player, keyy){
+        key = true; 
+        keyy.destroy();
     }
     
 

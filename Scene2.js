@@ -10,16 +10,19 @@ class Scene2 extends Phaser.Scene {
         this.maxSpeed = data.maxSpeed;
         this.playerSpeed = this.maxSpeed;
 
-        this.x = this.changeScene.positionScene(data.playerX, data.playerY)[0];
-        this.y = this.changeScene.positionScene(data.playerX, data.playerY)[1];
+        //this.x = this.changeScene.positionScene(data.playerX, data.playerY)[0];
+        //this.y = this.changeScene.positionScene(data.playerX, data.playerY)[1];
+
+        this.x = 500;
+        this.y = 500;
+
+        widthScreen = 1920;
+        heightScreen = 1080;
     }
 
     create(){
         //Import des functions de la scene 'control'
         this.control = this.scene.get('control');
-
-        //Création des input du joueur, false par defaut
-        this.inputP = [false, false, false, false]; //Right, Left, Down, Up
 
 
         this.add.image(960, 540, 'sky');
@@ -40,18 +43,18 @@ class Scene2 extends Phaser.Scene {
         
         //Collider
         this.physics.add.collider(this.player, this.platforms);
-        this.camera = this.cameras.main.setSize(1920,1080);
+        this.camera = this.cameras.main.setSize(widthScreen, heightScreen);
     }
     
     update(){
         //Si le joueur est en bas
-        if (this.player.y > 1055){
+        if (this.player.y > heightScreen-this.player.height/2){
             actualScene = 1;
             this.control.resetControl(this.cursors);
             this.scene.start('scene1', {playerX: this.player.x, playerY: this.player.y, maxSpeed: this.maxSpeed});
         }
         //Si le joueur est a gauche
-        if (this.player.x < 25){
+        if (this.player.x < this.player.width){
             actualScene = 1;
             this.control.resetControl(this.cursors);
             this.scene.start('scene1', {playerX: this.player.x, playerY: this.player.y, maxSpeed: this.maxSpeed});
@@ -59,8 +62,8 @@ class Scene2 extends Phaser.Scene {
 
         //Player's movement
         this.player.setVelocity(
-            this.control.movementJ(this.control.inputJoueur(this.cursors, this.inputP), this.player, this.playerSpeed, this.maxSpeed)[0],//X
-            this.control.movementJ(this.control.inputJoueur(this.cursors, this.inputP), this.player, this.playerSpeed, this.maxSpeed)[1]);//Y
+            this.control.movementJ(this.control.inputJoueur(this.cursors, inputP), this.player, this.playerSpeed, this.maxSpeed)[0],//X
+            this.control.movementJ(this.control.inputJoueur(this.cursors, inputP), this.player, this.playerSpeed, this.maxSpeed)[1]);//Y
 
 
         this.sceneText.setText('Scene '+ actualScene + ': ' + this.player);

@@ -4,38 +4,38 @@ class Control extends Phaser.Scene{
         super("control");
     }
 
-    inputJoueur(cursors, inputP){
+    inputJoueur(cursors, inputP, pad, xAxis, yAxis){
         //Input
-        
-        if (cursors.right.isDown){
+            
+        if (cursors.right.isDown || pad.right || xAxis > 0.5){
             inputP[0] = true;
         }
 
-        if (cursors.right.isUp){
+        if (cursors.right.isUp && !pad.right && Math.abs(xAxis) < 0.5){
             inputP[0] = false;
         }
 
-        if (cursors.left.isDown){
+        if (cursors.left.isDown || pad.left || xAxis < -0.5){
             inputP[1] = true;
         }
 
-        if (cursors.left.isUp){
+        if (cursors.left.isUp && !pad.left && Math.abs(xAxis) < 0.5){
             inputP[1] = false;
         }
 
-        if (cursors.down.isDown){
+        if (cursors.down.isDown || pad.down || yAxis > 0.5){
             inputP[2] = true;
         }
 
-        if (cursors.down.isUp){
+        if (cursors.down.isUp && !pad.down && Math.abs(yAxis) < 0.5){
             inputP[2] = false;
         }
 
-        if (cursors.up.isDown){
+        if (cursors.up.isDown || pad.up || yAxis < -0.5){
             inputP[3] = true;
         }
 
-        if (cursors.up.isUp){
+        if (cursors.up.isUp && !pad.up && Math.abs(yAxis) < 0.5){
             inputP[3] = false;
         }
 

@@ -22,10 +22,19 @@
 <script type="text/javascript">
 
 var actualScene = 1;
-var x = 300;
-var y = 1006;
+var x;
+var y;
+var boot = false;
+var key = false;
+
+var widthScreen = 3200;
+var heightScreen = 2400;
+
 var playerCoin = 100;
-var color = '#000'
+
+//Création des input du joueur, false par defaut
+var inputP = [false, false, false, false]; //Right, Left, Down, Up
+var color = '#000';
 
 
 var config = {
@@ -39,6 +48,7 @@ var config = {
             debug: true
         }
     },
+    input: {gamepad:true},
     scene: [Menu, Scene1, Scene2, Control, ChangeScene]
 };
 

@@ -9,30 +9,26 @@ class ChangeScene extends Phaser.Scene{
         //Si il est plus a droite qu'il n'est en haut/bas on ne change que le x etc...
 
         //Si le joueur est a gauche de l'écran avant de changer de scène
-        if (playerX/1920 < playerY/1080 && playerX/1920 < 1-playerY/1080){
-            x = (1920*(1-playerX/1920))-30;
+        if (playerX/widthScreen < playerY/heightScreen && playerX/widthScreen < 1-playerY/heightScreen){
+            x = (widthScreen*(1-playerX/widthScreen))-30;
             y = playerY;
         }
         
-        else if (1-playerX/1920 < playerY/1080 && 1-playerX/1920 < 1-playerY/1080){
-            x = (1920*(1-playerX/1920))+30;
+        else if (1-playerX/widthScreen < playerY/heightScreen && 1-playerX/widthScreen < 1-playerY/heightScreen){
+            x = (widthScreen*(1-playerX/widthScreen))+30;
             y = playerY;
         }
 
-        else if (1-playerX/1920 < playerY/1080 && playerX/1920 < playerY/1080){
-            y = (1080*(1-playerY/1080))+30;
+        else if (1-playerX/widthScreen < playerY/heightScreen && playerX/widthScreen < playerY/heightScreen){
+            y = (heightScreen*(1-playerY/heightScreen))+30;
             x = playerX;
         }
 
         else{
-            y = (1080*(1-playerY/1080))-30;
+            y = (heightScreen*(1-playerY/heightScreen))-30;
             x = playerX;
         }
 
-        if (playerX == null){
-            x = 960;
-            y = 540;
-        }
 
         return [x, y];
     }

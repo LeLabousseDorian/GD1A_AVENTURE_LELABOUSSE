@@ -5,6 +5,6 @@ class Menu extends Phaser.Scene{
     }
 
     create(){
-        this.scene.start('scene1', {maxSpeed: 300})
+        this.scene.start('scene1', {playerX: 960, playerY: 540, maxSpeed: 300})
     }
 }
