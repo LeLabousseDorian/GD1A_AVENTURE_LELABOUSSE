@@ -30,14 +30,15 @@ class Scene1 extends Phaser.Scene {
         //Tiled
         this.load.image('terrain_sheet', 'assets/terrain_sprite.png');
         this.load.tilemapTiledJSON('map', 'testmap.json');
+        this.load.tilemapTiledJSON('mapp', 'dungeon.json');
+
     }
 
     create(){
         //Import des functions de la scene 'control'
         this.control = this.scene.get('control');
 
-        this.xAxis = 0;  //Stick xAxys
-        this.yAxis = 0;  //Stick xAxys
+
 
         this.map = this.make.tilemap({ key: 'map' });
         this.tileset = this.map.addTilesetImage('terrain', 'terrain_sheet');
@@ -53,9 +54,9 @@ class Scene1 extends Phaser.Scene {
 
 
         this.ennemis = this.add.group();
-        this.ennemi1 = new Ennemi(this, 400, 700);
-        this.ennemi2 = new Ennemi(this, 1400, 900);
-        this.ennemi3 = new Ennemi(this, 1000, 800);
+        new Ennemi(this, 400, 700);
+        new Ennemi(this, 1400, 900);
+        new Ennemi(this, 1000, 800);
 
         this.coins = this.physics.add.group();
 
@@ -63,6 +64,8 @@ class Scene1 extends Phaser.Scene {
         this.player.setCollideWorldBounds(true);
         
         this.cursors = this.input.keyboard.createCursorKeys();
+        this.control.resetControl(this.cursors);
+
 
         this.sceneText = this.add.text(16, 16, 'Scene '+ actualScene + ': ' + this.random, { fontSize: '32px', fill: color }).setScrollFactor(0);
         this.playerXText = this.add.text(16, 48, 'X: '+ this.player.x, { fontSize: '32px', fill: color }).setScrollFactor(0);
@@ -94,8 +97,8 @@ class Scene1 extends Phaser.Scene {
         this.top.setTileLocationCallback(59, 23, 1, 1, ()=>{
             if (key){
                 actualScene = 2;
-                this.control.resetControl(this.cursors);
                 this.scene.start('scene2', {playerX: this.player.x , playerY: this.player.y, maxSpeed: this.maxSpeed})}
+                this.control.resetControl(this.cursors);
         })
         
 
@@ -111,7 +114,7 @@ class Scene1 extends Phaser.Scene {
                 targets: child,
                 x: child.x-300,
                 ease: 'Linear',
-                duration: 2000,
+                duration: 1000,
                 yoyo: true,
                 repeat: -1,
             });
@@ -133,22 +136,24 @@ class Scene1 extends Phaser.Scene {
     
     
         if(this.input.gamepad.total){   //Si une manette est connecté
-            pad = this.input.gamepad.getPad(0)  //pad récupère les inputs du joueur
-            this.xAxis = pad ? pad.axes[0].getValue() : 0;   //Si le stick est utilisé xAxys récupère la valeur sur l'axe X, sinon il est égale a 0
-            this.yAxis = pad ? pad.axes[1].getValue() : 0;   //Pareil pour l'axe Y
+            pad = this.input.gamepad.getPad(0);  //pad récupère les inputs du joueur
+            xAxis = pad ? pad.axes[0].getValue() : 0;   //Si le stick est utilisé xAxys récupère la valeur sur l'axe X, sinon il est égale a 0
+            yAxis = pad ? pad.axes[1].getValue() : 0;   //Pareil pour l'axe Y
     }
 
 
         if (this.ennemis.getLength() == 0){
-            this.map.removeTileAt(58, 22, {layer: this.top});
-            this.map.removeTileAt(59, 22, {layer: this.top});
-            this.map.removeTileAt(60, 22, {layer: this.top});
-            this.map.removeTileAt(58, 23, {layer: this.top});
-            this.map.removeTileAt(60, 23, {layer: this.top});
-            this.map.removeTileAt(58, 24, {layer: this.top});
-            this.map.removeTileAt(59, 24, {layer: this.top});
-            this.map.removeTileAt(60, 24, {layer: this.top});
+
         }
+
+        for(var i = 0; i < this.coins.getChildren().length; i++){
+            var coin = this.coins.getChildren()[i];
+
+            if (coin._moving){
+                coin.update();
+            }
+        }
+
         /*
         //Si le joueur est en haut
         if (this.player.y < this.player.height){
@@ -166,11 +171,13 @@ class Scene1 extends Phaser.Scene {
 
         //Player's movement
         this.player.setVelocity(
-            this.control.movementJ(this.control.inputJoueur(this.cursors, inputP, pad, this.xAxis, this.yAxis), this.player,this.playerSpeed, this.maxSpeed)[0],//X
-            this.control.movementJ(this.control.inputJoueur(this.cursors, inputP, pad, this.xAxis, this.yAxis), this.player,this.playerSpeed, this.maxSpeed)[1]);//Y
+            //X
+            this.control.movementJ(this.control.inputJoueur(this.cursors, inputP, pad, xAxis, yAxis), this.player,this.playerSpeed, this.maxSpeed)[0],
+            //Y
+            this.control.movementJ(this.control.inputJoueur(this.cursors, inputP, pad, xAxis, yAxis), this.player,this.playerSpeed, this.maxSpeed)[1]);
 
         
-        this.sceneText.setText('Scene '+ actualScene + ': ' + this.xAxis);
+        this.sceneText.setText('X: ' + xAxis + ' Y: ' + yAxis);
         this.playerXText.setText('X: '+ Math.round(this.player.x));
         this.playerYText.setText('Y: '+ Math.round(this.player.y));
         this.inputText.setText('Right: ' + inputP[0] + ' Left: ' + inputP[1] + ' Down: ' + inputP[2] + ' Up: ' + inputP[3]);
@@ -178,9 +185,9 @@ class Scene1 extends Phaser.Scene {
     }
 
     killEnnemi(player, ennemis){
-        let randomx = ennemis.x + Math.floor(Math.random() * 300)-150;
-        let randomy = ennemis.y + Math.floor(Math.random() * 300)-150;
-        this.coin = new Coin(this, 20, randomx, randomy);
+        let randomx = (Math.floor(Math.random() * 20)-10)*60;
+        let randomy = (Math.floor(Math.random() * 20)-10)*60;
+        this.coin = new Coin(this, 50, ennemis.x, ennemis.y, randomx, randomy);
         ennemis.destroy();
     }
 
@@ -192,15 +199,17 @@ class Scene1 extends Phaser.Scene {
     getBoot(player, boots){
 
         if (playerCoin >= 150){ 
-            playerCoin -= 150   
+            this.maxSpeed += 250;
+            playerCoin -= 150;
             boots.destroy();
             this.priceBoot.destroy();
             boot = true;
-            this.maxSpeed += 250}
+        }
         
     }
 
     getKey(player, keyy){
+        this.map.replaceByIndex(385, 297, 60, 23, 1, 1, 1);
         key = true; 
         keyy.destroy();
     }

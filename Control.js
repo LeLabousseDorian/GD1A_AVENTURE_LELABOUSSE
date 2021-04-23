@@ -7,19 +7,27 @@ class Control extends Phaser.Scene{
     inputJoueur(cursors, inputP, pad, xAxis, yAxis){
         //Input
             
-        if (cursors.right.isDown || pad.right || xAxis > 0.5){
+        if (pad.A && boot){
+            inputP[4] = true;
+        }
+
+        else{
+            inputP[4] = false;
+        }
+
+        if (cursors.right.isDown || pad.right || xAxis > 0.4){
             inputP[0] = true;
         }
 
-        if (cursors.right.isUp && !pad.right && Math.abs(xAxis) < 0.5){
+        if (cursors.right.isUp && !pad.right && xAxis < 0.4){
             inputP[0] = false;
         }
 
-        if (cursors.left.isDown || pad.left || xAxis < -0.5){
+        if (cursors.left.isDown || pad.left || xAxis < -0.4){
             inputP[1] = true;
         }
 
-        if (cursors.left.isUp && !pad.left && Math.abs(xAxis) < 0.5){
+        if (cursors.left.isUp && !pad.left && xAxis > - 0.4){
             inputP[1] = false;
         }
 
@@ -27,7 +35,7 @@ class Control extends Phaser.Scene{
             inputP[2] = true;
         }
 
-        if (cursors.down.isUp && !pad.down && Math.abs(yAxis) < 0.5){
+        if (cursors.down.isUp && !pad.down && yAxis < 0.5){
             inputP[2] = false;
         }
 
@@ -35,7 +43,7 @@ class Control extends Phaser.Scene{
             inputP[3] = true;
         }
 
-        if (cursors.up.isUp && !pad.up && Math.abs(yAxis) < 0.5){
+        if (cursors.up.isUp && !pad.up && yAxis > -0.5){
             inputP[3] = false;
         }
 
@@ -44,6 +52,10 @@ class Control extends Phaser.Scene{
 
     movementJ(inputP, player, playerSpeed, maxSpeed){
         //Logic
+
+        if (inputP[4]){
+            maxSpeed += 250;
+        }
 
         //Si le joueur se déplace en diagonale, sa vitesse est réduite
         if (player.body.velocity.x != 0 && player.body.velocity.y != 0){
@@ -90,20 +102,9 @@ class Control extends Phaser.Scene{
     }
 
     resetControl(cursors){
-        if(cursors.left.isDown){
             cursors.left.isDown = false;
-        }
-
-        if(cursors.right.isDown){
             cursors.right.isDown = false;
-        }
-
-        if(cursors.up.isDown){
             cursors.up.isDown = false;
-        }
-
-        if(cursors.down.isDown){
             cursors.down.isDown = false;
-        }
     }
 }
