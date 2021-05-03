@@ -30,15 +30,13 @@ class Scene1 extends Phaser.Scene {
         //Tiled
         this.load.image('terrain_sheet', 'assets/terrain_sprite.png');
         this.load.tilemapTiledJSON('map', 'testmap.json');
-        this.load.tilemapTiledJSON('mapp', 'dungeon.json');
+        this.load.tilemapTiledJSON('dungeon', 'dungeon.json');
 
     }
 
     create(){
         //Import des functions de la scene 'control'
         this.control = this.scene.get('control');
-
-
 
         this.map = this.make.tilemap({ key: 'map' });
         this.tileset = this.map.addTilesetImage('terrain', 'terrain_sheet');
@@ -52,11 +50,10 @@ class Scene1 extends Phaser.Scene {
 
         this.key = this.physics.add.image(1000, 800, 'item');
 
-
-        this.ennemis = this.add.group();
-        new Ennemi(this, 400, 700);
-        new Ennemi(this, 1400, 900);
-        new Ennemi(this, 1000, 800);
+        this.ennemis = this.physics.add.group();
+        new Ennemi(this, 400, 700, 'ennemi');
+        new Ennemi(this, 1400, 900, 'ennemi');
+        new Ennemi(this, 1000, 800, 'player');
 
         this.coins = this.physics.add.group();
 
@@ -66,14 +63,13 @@ class Scene1 extends Phaser.Scene {
         this.cursors = this.input.keyboard.createCursorKeys();
         this.control.resetControl(this.cursors);
 
-
         this.sceneText = this.add.text(16, 16, 'Scene '+ actualScene + ': ' + this.random, { fontSize: '32px', fill: color }).setScrollFactor(0);
         this.playerXText = this.add.text(16, 48, 'X: '+ this.player.x, { fontSize: '32px', fill: color }).setScrollFactor(0);
         this.playerYText = this.add.text(16, 80, 'Y: '+ this.player.y, { fontSize: '32px', fill: color }).setScrollFactor(0);
         this.inputText = this.add.text(16, 144, 'Right: ' + inputP[0] + ' Left: ' + inputP[1] + ' Down: ' + inputP[2] + ' Up: ' + inputP[3], { fontSize: '32px', fill: color }).setScrollFactor(0);
         this.velocityText = this.add.text(16, 176, 'X: ' + this.player.body.velocity.x + ' Y: ' + this.player.body.velocity.y, { fontSize: '32px', fill: color }).setScrollFactor(0);
         
-        //Collide
+        //Collider
         //Player
         this.physics.add.collider(this.player, this.platforms);
         this.physics.add.overlap(this.player, this.ennemis, this.killEnnemi, null, this);
@@ -82,9 +78,8 @@ class Scene1 extends Phaser.Scene {
         this.physics.add.overlap(this.player, this.boot, this.getBoot, null, this);
         this.physics.add.overlap(this.player, this.key, this.getKey, null, this);
 
-
         //Ennemis
-        this.physics.add.collider(this.ennemis, this.platforms);
+        this.physics.add.collider(this.ennemis, this.top);
 
         //Coin
         this.physics.add.collider(this.coins, this.top)
@@ -94,11 +89,9 @@ class Scene1 extends Phaser.Scene {
         //this.top.setCollision([385, 306]);
         //this.top.setCollisionByExclusion(-1, true);
 
-        this.top.setTileLocationCallback(59, 23, 1, 1, ()=>{
+        this.top.setTileLocationCallback(60, 23, 1, 1, ()=>{
             if (key){
-                actualScene = 2;
                 this.scene.start('scene2', {playerX: this.player.x , playerY: this.player.y, maxSpeed: this.maxSpeed})}
-                this.control.resetControl(this.cursors);
         })
         
 
@@ -106,7 +99,7 @@ class Scene1 extends Phaser.Scene {
         this.camera.startFollow(this.player, true, 0.08, 0.08);
         this.camera.setBounds(0, 0, 3200, 2400);
 
-        var test = this;
+        /*var test = this;
         var i = 0
 
         this.ennemis.children.iterate(function (child) {
@@ -126,14 +119,12 @@ class Scene1 extends Phaser.Scene {
                 i = 0;
             }
 
-        })
+        })*/
 
     }
 
     update(){
-
         let pad = Phaser.Input.Gamepad.Gamepad;
-    
     
         if(this.input.gamepad.total){   //Si une manette est connecté
             pad = this.input.gamepad.getPad(0);  //pad récupère les inputs du joueur
@@ -141,9 +132,8 @@ class Scene1 extends Phaser.Scene {
             yAxis = pad ? pad.axes[1].getValue() : 0;   //Pareil pour l'axe Y
     }
 
-
         if (this.ennemis.getLength() == 0){
-
+            
         }
 
         for(var i = 0; i < this.coins.getChildren().length; i++){
@@ -152,6 +142,13 @@ class Scene1 extends Phaser.Scene {
             if (coin._moving){
                 coin.update();
             }
+        }
+
+        for(var i = 0; i < this.ennemis.getChildren().length; i++){
+            var ennemi = this.ennemis.getChildren()[i];
+
+            ennemi.movement(this.player);
+            this.sceneText.setText('X: ' + this.player.x + ' Y: ' + ennemi.movement(this.player));
         }
 
         /*
@@ -177,17 +174,33 @@ class Scene1 extends Phaser.Scene {
             this.control.movementJ(this.control.inputJoueur(this.cursors, inputP, pad, xAxis, yAxis), this.player,this.playerSpeed, this.maxSpeed)[1]);
 
         
-        this.sceneText.setText('X: ' + xAxis + ' Y: ' + yAxis);
         this.playerXText.setText('X: '+ Math.round(this.player.x));
         this.playerYText.setText('Y: '+ Math.round(this.player.y));
-        this.inputText.setText('Right: ' + inputP[0] + ' Left: ' + inputP[1] + ' Down: ' + inputP[2] + ' Up: ' + inputP[3]);
+        this.inputText.setText('Right: ' + playerHp + ' Left: ' + inputP[1] + ' Down: ' + inputP[2] + ' Up: ' + inputP[3]);
         this.velocityText.setText('X: ' + this.player.body.velocity.x + ' Y: ' + this.player.body.velocity.y);
     }
 
     killEnnemi(player, ennemis){
-        let randomx = (Math.floor(Math.random() * 20)-10)*60;
-        let randomy = (Math.floor(Math.random() * 20)-10)*60;
-        this.coin = new Coin(this, 50, ennemis.x, ennemis.y, randomx, randomy);
+        if(!invulnerable)   // Si le joueur n'est pas invulnerable
+        {
+            playerHp --;                    // Le joueur perd un pv
+            invulnerable = true;            // Il deviens invulnerable
+            
+            if (playerHp > 0){  // Si le joueur est encore en vie après s'être pris le coup
+                this.time.addEvent({ delay: 200, repeat: 9, callback: function(){player.visible = !player.visible;}, callbackScope: this}); // Le joueur passe de visible a non visible toutes les 200ms 9 fois de suite
+            }
+    
+            this.time.addEvent({ delay: 2000, callback: function(){invulnerable = false;}, callbackScope: this});  // Le joueur n'est plus invulnerable après 2000ms
+        }
+            
+        let randomCoin = (Math.floor(Math.random() * 3))+2;
+
+        for (let i = 0; i < randomCoin; i++){
+            let randomx = (Math.floor(Math.random() * 20)-10)*60;
+            let randomy = (Math.floor(Math.random() * 20)-10)*60;
+            this.coin = new Coin(this, 50, ennemis.x, ennemis.y, randomx, randomy);
+        }
+
         ennemis.destroy();
     }
 
@@ -205,7 +218,6 @@ class Scene1 extends Phaser.Scene {
             this.priceBoot.destroy();
             boot = true;
         }
-        
     }
 
     getKey(player, keyy){
@@ -214,15 +226,8 @@ class Scene1 extends Phaser.Scene {
         keyy.destroy();
     }
     
-
-    /* X/Y to angle
-    deltaX = x2 - x1; ()
-    deltaY = y2 - y1;
-    deg = Math.atan2(deltaY, deltaX)*180.0/Math.PI;
-    */
-
-    /* Angle to X/Y
-    x += cos(257*pi/180)*17;
-    y += sin(257*pi/180)*17;
-    */
 }
+
+
+//P 960, 540
+//E 400, 700

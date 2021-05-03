@@ -25,11 +25,11 @@ class Scene2 extends Phaser.Scene {
         //Import des functions de la scene 'control'
         this.control = this.scene.get('control');
 
-        this.map = this.make.tilemap({ key: 'mapp' });
-        this.tileset = this.map.addTilesetImage('dungeont', 'terrain_sheet');
+        this.mapp = this.make.tilemap({ key: 'dungeon' });
+        this.tileset = this.mapp.addTilesetImage('dungeon', 'terrain_sheet');
 
-        this.bot = this.map.createStaticLayer('bot', this.tileset, 0, 0);
-        this.top = this.map.createDynamicLayer('top', this.tileset, 0, 0);
+        this.bot = this.mapp.createStaticLayer('bot', this.tileset, 0, 0);
+        this.top = this.mapp.createDynamicLayer('top', this.tileset, 0, 0);
 
         this.player = this.physics.add.image(this.x, this.y, 'player');
         this.player.setCollideWorldBounds(true);

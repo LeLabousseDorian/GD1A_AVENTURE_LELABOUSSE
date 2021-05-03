@@ -9,6 +9,7 @@ class Coin extends Phaser.GameObjects.Sprite{
         this._newPositionY = vectorY;
         this._tick = 1;
         this._moving = true;
+        
         scene.add.existing(this);
         scene.physics.world.enableBody(this);
         scene.coins.add(this);

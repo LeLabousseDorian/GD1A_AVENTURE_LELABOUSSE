@@ -14,42 +14,23 @@ class Control extends Phaser.Scene{
         else{
             inputP[4] = false;
         }
+        
 
-        if (cursors.right.isDown || pad.right || xAxis > 0.4){
-            inputP[0] = true;
-        }
+        //Le joueur appuie sur Droite(Clavier) ou pad Droite/stick vers la Droite(Manette)
+        inputP[0] = cursors.right.isDown || pad.right || xAxis > 0.4 ? true : false;
 
-        if (cursors.right.isUp && !pad.right && xAxis < 0.4){
-            inputP[0] = false;
-        }
+        //Le joueur appuie sur Gauche(Clavier) ou pad gauche/stick vers la Gauche(Manette)
+        inputP[1] = cursors.left.isDown || pad.left || xAxis < -0.4 ? true : false;
 
-        if (cursors.left.isDown || pad.left || xAxis < -0.4){
-            inputP[1] = true;
-        }
+        //Le joueur appuie sur Bas(Clavier) ou pad Bas/stick vers la Bas(Manette)
+        inputP[2] = cursors.down.isDown || pad.down || yAxis > 0.5 ? true : false;
 
-        if (cursors.left.isUp && !pad.left && xAxis > - 0.4){
-            inputP[1] = false;
-        }
-
-        if (cursors.down.isDown || pad.down || yAxis > 0.5){
-            inputP[2] = true;
-        }
-
-        if (cursors.down.isUp && !pad.down && yAxis < 0.5){
-            inputP[2] = false;
-        }
-
-        if (cursors.up.isDown || pad.up || yAxis < -0.5){
-            inputP[3] = true;
-        }
-
-        if (cursors.up.isUp && !pad.up && yAxis > -0.5){
-            inputP[3] = false;
-        }
+        //Le joueur appuie sur Haut(Clavier) ou pad Haut/stick vers la Haut(Manette)
+        inputP[3] = cursors.up.isDown || pad.up || yAxis < -0.5 ? true : false;
 
         return (inputP);
     }
-
+    
     movementJ(inputP, player, playerSpeed, maxSpeed){
         //Logic
 
