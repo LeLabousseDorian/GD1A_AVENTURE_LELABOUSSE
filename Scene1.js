@@ -95,9 +95,9 @@ class Scene1 extends Phaser.Scene {
         })
         
 
-        this.camera = this.cameras.main.setSize(1920,1080);
+        this.camera = this.cameras.main.setSize(1280,720);
         this.camera.startFollow(this.player, true, 0.08, 0.08);
-        this.camera.setBounds(0, 0, 3200, 2400);
+        this.camera.setBounds(0, 0, 2400, 1600);
 
         this.anims.create({
             key: 'left',
@@ -235,8 +235,8 @@ class Scene1 extends Phaser.Scene {
         let randomCoin = (Math.floor(Math.random() * 3))+2;
 
         for (let i = 0; i < randomCoin; i++){
-            let randomx = (Math.floor(Math.random() * 20)-10)*60;
-            let randomy = (Math.floor(Math.random() * 20)-10)*60;
+            let randomx = (Math.floor(Math.random() * 20)-10)*50;
+            let randomy = (Math.floor(Math.random() * 20)-10)*50;
             this.coin = new Coin(this, 50, ennemis.x, ennemis.y, randomx, randomy);
             this.coin.body.setSize(26, 36)
             this.coin.body.setOffset(3, 1)
