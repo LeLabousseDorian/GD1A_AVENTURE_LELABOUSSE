@@ -3,7 +3,7 @@ class Ennemi extends Phaser.GameObjects.Sprite{
         super(scene, x, y, image);
 
         scene.add.existing(this);
-        scene.ennemis.add(this)
+        scene.ennemis.add(this);
     }
 
     input(){

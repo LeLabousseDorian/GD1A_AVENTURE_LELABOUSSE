@@ -20,16 +20,16 @@ class Scene1 extends Phaser.Scene {
 
     preload(){
         this.load.image('sky', "assets/sky_ph.png");
-        this.load.image('item', "assets/item_ph.png");
-        this.load.image('coin', "assets/coin_ph.png");
-        this.load.image('player', 'assets/player_ph.png');
+        this.load.image('boot', "assets/boot.png");
+        this.load.spritesheet('coin', "assets/coinsheet.png", { frameWidth: 32, frameHeight: 26 });
+        this.load.spritesheet('player', 'assets/player.png', {frameWidth: 32, frameHeight: 64});
         this.load.image('ennemi', 'assets/ennemi_ph.png');
         this.load.image('merchant', 'assets/merchant_ph.png');
 
 
         //Tiled
-        this.load.image('terrain_sheet', 'assets/terrain_sprite.png');
-        this.load.tilemapTiledJSON('map', 'testmap.json');
+        this.load.image('tileset', 'assets/TilesetVillage.png');
+        this.load.tilemapTiledJSON('map', 'village.json');
         this.load.tilemapTiledJSON('dungeon', 'dungeon.json');
 
     }
@@ -39,7 +39,7 @@ class Scene1 extends Phaser.Scene {
         this.control = this.scene.get('control');
 
         this.map = this.make.tilemap({ key: 'map' });
-        this.tileset = this.map.addTilesetImage('terrain', 'terrain_sheet');
+        this.tileset = this.map.addTilesetImage('TilesetVillage', 'tileset');
 
         this.bot = this.map.createStaticLayer('bot', this.tileset, 0, 0);
         this.top = this.map.createDynamicLayer('top', this.tileset, 0, 0);
@@ -57,7 +57,7 @@ class Scene1 extends Phaser.Scene {
 
         this.coins = this.physics.add.group();
 
-        this.player = this.physics.add.image(this.x, this.y, 'player');
+        this.player = this.physics.add.sprite(this.x, this.y, 'player').setSize(28, 15).setOffset(1, 40).setDepth(10);
         this.player.setCollideWorldBounds(true);
         
         this.cursors = this.input.keyboard.createCursorKeys();
@@ -98,6 +98,43 @@ class Scene1 extends Phaser.Scene {
         this.camera = this.cameras.main.setSize(1920,1080);
         this.camera.startFollow(this.player, true, 0.08, 0.08);
         this.camera.setBounds(0, 0, 3200, 2400);
+
+        this.anims.create({
+            key: 'left',
+            frames: this.anims.generateFrameNumbers('player', { start: 3, end: 5 }),
+            frameRate: 5,
+        });
+
+        this.anims.create({
+            key: 'right',
+            frames: this.anims.generateFrameNumbers('player', { start: 6, end: 8 }),
+            frameRate: 5,
+        });
+
+        this.anims.create({
+            key: 'up',
+            frames: this.anims.generateFrameNumbers('player', { start: 9, end: 11 }),
+            frameRate: 5,
+        });
+
+        this.anims.create({
+            key: 'down',
+            frames: this.anims.generateFrameNumbers('player', { start: 0, end: 2 }),
+            frameRate: 5,
+        });
+
+        this.anims.create({
+            key: 'coin_spin',
+            frames: this.anims.generateFrameNumbers('coin', { start: 0, end: 5 }),
+            frameRate: 10,
+            repeat: -1
+        });
+    
+        /*this.anims.create({
+            key: 'turn',
+            frames: [ { key: 'dude', frame: 4 } ],
+            frameRate: 20
+        });*/
 
         /*var test = this;
         var i = 0
@@ -146,7 +183,6 @@ class Scene1 extends Phaser.Scene {
 
         for(var i = 0; i < this.ennemis.getChildren().length; i++){
             var ennemi = this.ennemis.getChildren()[i];
-
             ennemi.movement(this.player);
             this.sceneText.setText('X: ' + this.player.x + ' Y: ' + ennemi.movement(this.player));
         }
@@ -172,7 +208,10 @@ class Scene1 extends Phaser.Scene {
             this.control.movementJ(this.control.inputJoueur(this.cursors, inputP, pad, xAxis, yAxis), this.player,this.playerSpeed, this.maxSpeed)[0],
             //Y
             this.control.movementJ(this.control.inputJoueur(this.cursors, inputP, pad, xAxis, yAxis), this.player,this.playerSpeed, this.maxSpeed)[1]);
-
+        
+        if(this.player.body.velocity.x != 0 || this.player.body.velocity.y != 0){
+            this.player.anims.play(this.control.animation(this.player), true);
+        }
         
         this.playerXText.setText('X: '+ Math.round(this.player.x));
         this.playerYText.setText('Y: '+ Math.round(this.player.y));
@@ -199,6 +238,9 @@ class Scene1 extends Phaser.Scene {
             let randomx = (Math.floor(Math.random() * 20)-10)*60;
             let randomy = (Math.floor(Math.random() * 20)-10)*60;
             this.coin = new Coin(this, 50, ennemis.x, ennemis.y, randomx, randomy);
+            this.coin.body.setSize(26, 36)
+            this.coin.body.setOffset(3, 1)
+            this.coin.anims.play('coin_spin', true)
         }
 
         ennemis.destroy();
