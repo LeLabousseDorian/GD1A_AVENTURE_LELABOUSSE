@@ -247,8 +247,10 @@ class Scene1 extends Phaser.Scene {
     }
 
     collectCoin(player, coins){
+        if (coins._moving == false){
         playerCoin += coins.getValue()
         coins.destroy();
+        }
     }
 
     getBoot(player, boots){
