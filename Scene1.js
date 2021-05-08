@@ -119,6 +119,9 @@ class Scene1 extends Phaser.Scene {
             this.health = this.add.image(100, 50, 'hp1').setScrollFactor(0).setScale(2);
         }
 
+        this.controller = this.add.image( 640, 360, 'control').setScrollFactor(0);
+        this.timer = 1000;
+
 
         /*var test = this;
 
@@ -144,6 +147,13 @@ class Scene1 extends Phaser.Scene {
     }
 
     update(){
+        if (this.timer > 0){
+            this.timer--
+        }
+
+        if (this.timer <= 0 || this.player.y > 400){
+            this.controller.destroy();
+        }
         let pad = Phaser.Input.Gamepad.Gamepad;
     
         if(this.input.gamepad.total){   //Si une manette est connecté
