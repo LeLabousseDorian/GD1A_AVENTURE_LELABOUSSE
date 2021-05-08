@@ -13,8 +13,8 @@ class Scene2 extends Phaser.Scene {
         //this.x = this.changeScene.positionScene(data.playerX, data.playerY)[0];
         //this.y = this.changeScene.positionScene(data.playerX, data.playerY)[1];
 
-        this.x = data.x;
-        this.y = data.y;
+        this.x = data.playerX;
+        this.y = data.playerY;
 
     }
 
@@ -24,6 +24,9 @@ class Scene2 extends Phaser.Scene {
         this.control = this.scene.get('control');
 
         this.waiting = 120;
+        this.hitbox = this.physics.add.image(0, 0, 'hitbox').setOrigin(0, 0.5).setSize(64, 25);
+        this.ia = false;
+        this.blood = false;
 
         this.map = this.make.tilemap({ key: 'dungeon' });
         this.tileset = this.map.addTilesetImage('TilesetDungeon', 'tileset');
@@ -32,19 +35,24 @@ class Scene2 extends Phaser.Scene {
         this.top = this.map.createDynamicLayer('collision', this.tileset, 0, 0);
 
         this.coins = this.physics.add.group();
-
-        this.hitbox = this.physics.add.image(0, 0, 'hitbox').setOrigin(0, 0.5).setSize(64, 25);
-
+        //this.blood = this.physics.add.group();
 
         this.ennemis = this.physics.add.group();
         new Ennemi(this, 1810, 224, 'ennemi');
-        new Ennemi(this, 1940, 450, 'ennemi');
+        new Ennemi(this, 1940, 550, 'ennemi');
         new Ennemi(this, 1780, 300, 'ennemi');
+
+        this.ennemis2 = this.physics.add.group();
+        new Ennemi2(this, 810, 224, 'ennemi');
+        new Ennemi2(this, 940, 500, 'ennemi');
+        new Ennemi2(this, 780, 800, 'ennemi');
+        new Ennemi2(this, 800, 100, 'ennemi');
+        new Ennemi2(this, 1000, 500, 'ennemi');
 
         this.player = this.physics.add.sprite(this.x, this.y, 'player').setSize(28, 15).setOffset(1, 40);
         this.player.setCollideWorldBounds(true);
 
-        this.player.on('animationcomplete', function(){ //  Autorise le personnage à bouger uniquement quand l'animation d'attaque se fini
+        this.player.on('animationcomplete', function(){ //Autorise le personnage à bouger uniquement quand l'animation d'attaque se fini
             attack = false;
         });
 
@@ -65,12 +73,15 @@ class Scene2 extends Phaser.Scene {
         
         //Player
         this.physics.add.overlap(this.player, this.ennemis, this.hitPlayer, null, this);
+        this.physics.add.overlap(this.player, this.ennemis2, this.hitPlayer, null, this);
         this.physics.add.overlap(this.player, this.coins, this.collectCoin, null, this);
         this.physics.add.collider(this.player, this.top);
         this.physics.add.overlap(this.hitbox, this.ennemis, this.killEnnemi, null, this);
+        this.physics.add.overlap(this.hitbox, this.ennemis2, this.killEnnemi, null, this);
 
         //Ennemis
         this.physics.add.collider(this.ennemis, this.top);
+        this.physics.add.collider(this.ennemis2, this.top);
 
         //Coin
         this.physics.add.collider(this.coins, this.top)
@@ -81,10 +92,33 @@ class Scene2 extends Phaser.Scene {
         this.camera.startFollow(this.player, true, 0.08, 0.08);
         this.camera.setBounds(0, 0, 2400, 1600);
 
+        this.inventory0 = this.add.image(1150, 50, 'blood').setScrollFactor(0);
+        this.bloodText = this.add.text(this.inventory0.x + 25, this.inventory0.y - 16, bloodAmount, { fontSize: '38px', fill: '#fff' }).setScrollFactor(0);
 
-        this.top.setTileLocationCallback(61, 11, 1, 1, ()=>{
-            if (key){
-                this.scene.start('scene2', {x: this.player.x , y: this.player.y, maxSpeed: this.maxSpeed})}
+        this.inventory1 = this.add.image(1150, 100, 'coin_inventory').setScrollFactor(0);
+        this.coinText = this.add.text(this.inventory1.x + 25, this.inventory1.y - 15, playerCoin, { fontSize: '32px', fill: '#fff' }).setScrollFactor(0);
+
+        if(!boot){
+            this.inventory2 = this.add.image(1150, 150, 'boot_off').setScrollFactor(0);
+        }
+        else {
+            this.inventory2 = this.add.image(1150, 150, 'boot_on').setScrollFactor(0);
+
+        }
+
+        if(!sword){
+            this.inventory3 = this.add.image(1150, 200, 'sword_off').setScrollFactor(0);
+        }
+        else {
+            this.inventory3 = this.add.image(1150, 200, 'sword_on').setScrollFactor(0);
+
+        }
+
+        this.top.setTileLocationCallback(61, 12, 1, 1, ()=>{
+            if (this.blood){
+                bloodAmount--;
+
+                this.scene.start('scene1', {playerX: 2016, playerY: 480, maxSpeed: this.maxSpeed})}
         })
     }
     
@@ -103,6 +137,14 @@ class Scene2 extends Phaser.Scene {
             this.waiting--;
         }
 
+        if (this.ennemis.getLength() == 0){
+            for(let i = 0; i<8; i++){
+                for(let z = 0; z<12; z++){
+                    this.top.removeTileAt(58+i, 18+z, 1, 1, 1)
+                }
+            }
+        }
+
         for(var i = 0; i < this.coins.getChildren().length; i++){
             var coin = this.coins.getChildren()[i];
 
@@ -115,8 +157,26 @@ class Scene2 extends Phaser.Scene {
             for(var i = 0; i < this.ennemis.getChildren().length; i++){
                 var ennemi = this.ennemis.getChildren()[i];
                 ennemi.movement(this.player);
-                this.sceneText.setText('X: ' + this.player.x + ' Y: ' + ennemi.movement(this.player));
             }
+        }
+
+        if(this.player.x < 1600, this.player.y > 750){
+            this.ia = true;
+        }
+
+        if(this.ia){
+            for(var i = 0; i < this.ennemis2.getChildren().length; i++){
+                var ennemi2 = this.ennemis2.getChildren()[i];
+                ennemi2.movement(this.player);
+            }
+        }
+
+        if(boot){
+            this.inventory2.setTexture('boot_on')
+        }
+
+        if(sword){
+            this.inventory3.setTexture('sword_on')
         }
                 
 
@@ -179,17 +239,24 @@ class Scene2 extends Phaser.Scene {
 
     killEnnemi(player, ennemis){
         if(attack){
-            let randomCoin = (Math.floor(Math.random() * 3))+2;
+            if(this.ennemis2.getLength() == 1){
+                this.bloodTear = this.physics.add.image(ennemis.x, ennemis.y, 'blood')
+                this.physics.add.collider(this.player, this.bloodTear, this.collectBlood, null, this);
 
-            for (let i = 0; i < randomCoin; i++){
-                let randomx = (Math.floor(Math.random() * 20)-10)*50;
-                let randomy = (Math.floor(Math.random() * 20)-10)*50;
-                this.coin = new Coin(this, 50, ennemis.x, ennemis.y, randomx, randomy);
-                this.coin.body.setSize(26, 36)
-                this.coin.body.setOffset(3, 1)
-                this.coin.anims.play('coin_spin', true)
             }
 
+            else{
+                let randomCoin = (Math.floor(Math.random() * 3))+2;
+
+                for (let i = 0; i < randomCoin; i++){
+                    let randomx = (Math.floor(Math.random() * 20)-10)*50;
+                    let randomy = (Math.floor(Math.random() * 20)-10)*50;
+                    this.coin = new Coin(this, 4, ennemis.x, ennemis.y, randomx, randomy);
+                    this.coin.body.setSize(26, 36)
+                    this.coin.body.setOffset(3, 1)
+                    this.coin.anims.play('coin_spin', true)
+                }
+            }
             ennemis.destroy();
         }
     }
@@ -197,8 +264,15 @@ class Scene2 extends Phaser.Scene {
     collectCoin(player, coins){
         if (coins._moving == false){
             playerCoin += coins.getValue();
+            this.coinText.setText(playerCoin);
             coins.destroy();
         }
     }
 
+    collectBlood(player, bloodTear){
+        this.bloodTear.destroy();
+        bloodAmount++;
+        this.bloodText.setText(bloodAmount);
+        this.blood = true;
+    }
 }

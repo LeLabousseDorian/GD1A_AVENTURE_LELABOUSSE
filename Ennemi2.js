@@ -1,9 +1,9 @@
-class Ennemi extends Phaser.GameObjects.Sprite{
+class Ennemi2 extends Phaser.GameObjects.Sprite{
     constructor(scene, x, y, image){
         super(scene, x, y, image);
 
         scene.add.existing(this);
-        scene.ennemis.add(this);
+        scene.ennemis2.add(this);
     }
 
     movement(player){

@@ -18,50 +18,28 @@ class Scene1 extends Phaser.Scene {
         
     }
 
-    preload(){
-        this.load.image('sky', "assets/sky_ph.png");
-        this.load.image('boot', "assets/boot.png");
-        this.load.spritesheet('coin', "assets/coinsheet.png", { frameWidth: 32, frameHeight: 26 });
-        this.load.atlas('player', 'assets/player.png', 'assets/player.json');
-        this.load.image('ennemi', 'assets/monstre.png');
-        this.load.image('merchant', 'assets/merchant_ph.png');
-        this.load.image('sword', 'assets/sword.png')
-        this.load.image('hitbox', 'assets/hitbox.png')
-
-
-        //Tiled
-        this.load.image('tileset', 'assets/TilesetVillage.png');
-        this.load.tilemapTiledJSON('map', 'village.json');
-        this.load.tilemapTiledJSON('dungeon', 'dungeon.json');
-
-    }
-
     create(){
+        knife = true;
         //Import des functions de la scene 'control'
         this.control = this.scene.get('control');
 
         this.map = this.make.tilemap({ key: 'map' });
         this.tileset = this.map.addTilesetImage('TilesetVillage', 'tileset');
+        this.hitbox = this.physics.add.image(0, 0, 'hitbox').setOrigin(0, 0.5).setSize(64, 25);
 
         this.bot = this.map.createStaticLayer('bot', this.tileset, 0, 0);
         this.top = this.map.createDynamicLayer('collision', this.tileset, 0, 0);
 
-        this.merchant = this.add.image(2125, 300, 'merchant');
-        this.boot = this.physics.add.image(2125, 400, 'item');
-        this.priceBoot = this.add.text(this.boot.x-30, this.boot.y+50, '150', { fontSize: '32px', fill: '#000' });
+        this.merchant = this.add.image(1760, 800, 'merchant');
 
-        this.key = this.physics.add.image(1000, 800, 'item');
+        if(!boot){
+            this.boot = this.physics.add.image(this.merchant.x, this.merchant.y + 50, 'boot');
+            this.priceBoot = this.add.text(this.boot.x-30, this.boot.y+25, '150', { fontSize: '32px', fill: '#000' });
+        }
 
         this.coins = this.physics.add.group();
         
-        this.sword = this.physics.add.image(400, 270, 'sword').setAngle(-135).setSize(32, 40);
-
-        this.hitbox = this.physics.add.image(0, 0, 'hitbox').setOrigin(0, 0.5).setSize(64, 25);
-
-        this.ennemis = this.physics.add.group();
-        new Ennemi(this, 400, 700, 'ennemi');
-        new Ennemi(this, 1400, 900, 'ennemi');
-        new Ennemi(this, 1000, 800, 'ennemi');
+        this.sword = this.physics.add.image(850, 675, 'sword').setAngle(-135).setSize(32, 40);
 
         this.player = this.physics.add.sprite(this.x, this.y, 'player').setSize(28, 15).setOffset(1, 40);
         this.player.setCollideWorldBounds(true);
@@ -90,16 +68,11 @@ class Scene1 extends Phaser.Scene {
         
         //Collider
         //Player
-        this.physics.add.overlap(this.player, this.ennemis, this.hitPlayer, null, this);
         this.physics.add.overlap(this.player, this.coins, this.collectCoin, null, this);
         this.physics.add.collider(this.player, this.top);
         this.physics.add.overlap(this.player, this.boot, this.getBoot, null, this);
-        this.physics.add.overlap(this.player, this.key, this.getKey, null, this);
         this.physics.add.overlap(this.player, this.sword, this.getSword, null, this);
-        this.physics.add.overlap(this.hitbox, this.ennemis, this.killEnnemi, null, this);
 
-        //Ennemis
-        this.physics.add.collider(this.ennemis, this.top);
 
         //Coin
         this.physics.add.collider(this.coins, this.top)
@@ -112,108 +85,34 @@ class Scene1 extends Phaser.Scene {
         this.top.setTileLocationCallback(61, 12, 1, 1, ()=>{
             if (knife){
                 knife = false;
-                this.scene.start('scene2', {x: this.player.x , y: this.player.y, maxSpeed: this.maxSpeed})}
+                this.scene.start('scene2', {playerX: this.player.x , playerY: this.player.y, maxSpeed: this.maxSpeed})}
         })
         
         this.camera = this.cameras.main.setSize(1280,720);
         this.camera.startFollow(this.player, true, 0.08, 0.08);
         this.camera.setBounds(0, 0, 2400, 1600);
 
-        this.anims.create({
-            key: 'left',
-            frames: this.anims.generateFrameNames('player', {
-                prefix: 'left',
-                start: 1,
-                end: 3,
-                zeroPad: 1
-            }),
-            frameRate: 5,
-        });
+        this.inventory0 = this.add.image(1150, 50, 'blood').setScrollFactor(0);
+        this.bloodText = this.add.text(this.inventory0.x + 25, this.inventory0.y - 16, bloodAmount, { fontSize: '38px', fill: '#fff' }).setScrollFactor(0);
 
-        this.anims.create({
-            key: 'right',
-            frames: this.anims.generateFrameNames('player', {
-                prefix: 'right',
-                start: 1,
-                end: 3,
-                zeroPad: 1
-            }),
-            frameRate: 5,
-        });
+        this.inventory1 = this.add.image(1150, 100, 'coin_inventory').setScrollFactor(0);
+        this.coinText = this.add.text(this.inventory1.x + 25, this.inventory1.y - 16, playerCoin, { fontSize: '38px', fill: '#fff' }).setScrollFactor(0);
+        
+        if(!boot){
+            this.inventory2 = this.add.image(1150, 150, 'boot_off').setScrollFactor(0);
+        }
+        else {
+            this.inventory2 = this.add.image(1150, 150, 'boot_on').setScrollFactor(0);
 
-        this.anims.create({
-            key: 'up',
-            frames: this.anims.generateFrameNames('player', {
-                prefix: 'up',
-                start: 1,
-                end: 3,
-                zeroPad: 1
-            }),
-            frameRate: 5,
-        });
+        }
 
-        this.anims.create({
-            key: 'down',
-            frames: this.anims.generateFrameNames('player', {
-                prefix: 'down',
-                start: 1,
-                end: 3,
-                zeroPad: 1
-            }),
-            frameRate: 5,
-        });
+        if(!sword){
+            this.inventory3 = this.add.image(1150, 200, 'sword_off').setScrollFactor(0);
+        }
+        else {
+            this.inventory3 = this.add.image(1150, 200, 'sword_on').setScrollFactor(0);
 
-        this.anims.create({
-            key: 'leftAttack',
-            frames: this.anims.generateFrameNames('player', {
-                prefix: 'attackLeft',
-                start: 1,
-                end: 2,
-                zeroPad: 1
-            }),
-            frameRate: 2,
-        });
-
-        this.anims.create({
-            key: 'rightAttack',
-            frames: this.anims.generateFrameNames('player', {
-                prefix: 'attackRight',
-                start: 1,
-                end: 2,
-                zeroPad: 1
-            }),
-            frameRate: 2,
-        });
-
-        this.anims.create({
-            key: 'upAttack',
-            frames: this.anims.generateFrameNames('player', {
-                prefix: 'attackUp',
-                start: 1,
-                end: 2,
-                zeroPad: 1
-            }),
-            frameRate: 2,
-        });
-
-        this.anims.create({
-            key: 'downAttack',
-            frames: this.anims.generateFrameNames('player', {
-                prefix: 'attackDown',
-                start: 1,
-                end: 2,
-                zeroPad: 1
-            }),
-            frameRate: 2,
-        });
-
-        this.anims.create({
-            key: 'coin_spin',
-            frames: this.anims.generateFrameNumbers('coin', { start: 0, end: 5 }),
-            frameRate: 10,
-            repeat: -1
-        });
-
+        }
 
         /*var test = this;
 
@@ -247,23 +146,6 @@ class Scene1 extends Phaser.Scene {
             yAxis = pad ? pad.axes[1].getValue() : 0;   //Pareil pour l'axe Y
     }
 
-        if (this.ennemis.getLength() == 0){
-            
-        }
-
-        for(var i = 0; i < this.coins.getChildren().length; i++){
-            var coin = this.coins.getChildren()[i];
-
-            if (coin._moving){
-                coin.update();
-            }
-        }
-
-        for(var i = 0; i < this.ennemis.getChildren().length; i++){
-            var ennemi = this.ennemis.getChildren()[i];
-            ennemi.movement(this.player);
-            this.sceneText.setText('X: ' + this.player.x + ' Y: ' + ennemi.movement(this.player));
-        }
 
         if(attack){
             if(direction =='left'){
@@ -289,6 +171,14 @@ class Scene1 extends Phaser.Scene {
                 this.hitbox.x = this.player.x-5;
                 this.hitbox.y = this.player.y+34;
             }
+        }
+
+        if(boot){
+            this.inventory2.setTexture('boot_on')
+        }
+
+        if(sword){
+            this.inventory3.setTexture('sword_on')
         }
         
 
@@ -346,9 +236,9 @@ class Scene1 extends Phaser.Scene {
                 let randomx = (Math.floor(Math.random() * 20)-10)*50;
                 let randomy = (Math.floor(Math.random() * 20)-10)*50;
                 this.coin = new Coin(this, 50, ennemis.x, ennemis.y, randomx, randomy);
-                this.coin.body.setSize(26, 36)
-                this.coin.body.setOffset(3, 1)
-                this.coin.anims.play('coin_spin', true)
+                this.coin.body.setSize(26, 36);
+                this.coin.body.setOffset(3, 1);
+                this.coin.anims.play('coin_spin', true);
             }
 
             ennemis.destroy();
@@ -357,8 +247,9 @@ class Scene1 extends Phaser.Scene {
 
     collectCoin(player, coins){
         if (coins._moving == false){
-        playerCoin += coins.getValue()
+        playerCoin += coins.getValue();
         coins.destroy();
+        this.coinText.setText(playerCoin);
         }
     }
 
@@ -367,21 +258,23 @@ class Scene1 extends Phaser.Scene {
         if (playerCoin >= 150){ 
             this.maxSpeed += 100;
             playerCoin -= 150;
+            this.coinText.setText(playerCoin);
             boots.destroy();
             this.priceBoot.destroy();
             boot = true;
         }
     }
 
-    getKey(player, weapon){
+    /*getKey(player, weapon){
         this.map.replaceByIndex(385, 297, 60, 23, 1, 1, 1);
         knife = true; 
         weapon.destroy();
-    }
+    }*/
 
     getSword(player, swordd){
         swordd.destroy()
         sword = true;
+        knife = true;
     }
     
 }

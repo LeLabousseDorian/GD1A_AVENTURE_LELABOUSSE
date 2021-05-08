@@ -8,9 +8,9 @@
     <script type="text/javascript" src= "Scene1.js"></script>
     <script type="text/javascript" src= "Scene2.js"></script>
     <script type="text/javascript" src= "Ennemi.js"></script>
+    <script type="text/javascript" src= "Ennemi2.js"></script>
     <script type="text/javascript" src= "Coin.js"></script>
     <script type="text/javascript" src= "Control.js"></script>
-    <script type="text/javascript" src= "ChangeScene.js"></script>
     <style type="text/css">
         body {
             margin: 0;
@@ -32,6 +32,7 @@ var playerHp = 3;
 var direction = "down";
 var sword = false;
 var attack = false;
+var bloodAmount = 0;
 
 var widthScreen = 3200;
 var heightScreen = 2400;
@@ -57,7 +58,7 @@ var config = {
         }
     },
     input: {gamepad:true},
-    scene: [Menu, Scene1, Scene2, Control, ChangeScene]
+    scene: [Menu, Scene1, Scene2, Control]
 };
 
 var game = new Phaser.Game(config);
