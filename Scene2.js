@@ -64,13 +64,7 @@ class Scene2 extends Phaser.Scene {
             'right': Phaser.Input.Keyboard.KeyCodes.RIGHT,
             'space' : Phaser.Input.Keyboard.KeyCodes.SPACE
         });
-        
-        //Test Text
-        this.sceneText = this.add.text(16, 16, 'Scene '+ playerCoin, { fontSize: '32px', fill: '#ddd' }).setScrollFactor(0);
-        this.playerXText = this.add.text(16, 48, 'X: '+ this.player.x, { fontSize: '32px', fill: '#ddd' }).setScrollFactor(0);
-        this.playerYText = this.add.text(16, 80, 'Y: '+ this.player.y, { fontSize: '32px', fill: '#ddd' }).setScrollFactor(0);
-        this.velocityText = this.add.text(16, 176, 'X: ' + this.player.body.velocity.x + ' Y: ' + this.player.body.velocity.y, { fontSize: '32px', fill: '#ddd' }).setScrollFactor(0);
-        
+              
         //Player
         this.physics.add.overlap(this.player, this.ennemis, this.hitPlayer, null, this);
         this.physics.add.overlap(this.player, this.ennemis2, this.hitPlayer, null, this);
@@ -114,6 +108,16 @@ class Scene2 extends Phaser.Scene {
 
         }
 
+        if(playerHp == 3){
+            this.health = this.add.image(100, 50, 'hp3').setScrollFactor(0).setScale(2);
+        }
+        else if(playerHp == 2){
+            this.health = this.add.image(100, 50, 'hp2').setScrollFactor(0).setScale(2);
+        }
+        else{
+            this.health = this.add.image(100, 50, 'hp1').setScrollFactor(0).setScale(2);
+        }
+
         this.top.setTileLocationCallback(61, 12, 1, 1, ()=>{
             if (this.blood){
                 bloodAmount--;
@@ -123,6 +127,11 @@ class Scene2 extends Phaser.Scene {
     }
     
     update(){
+        if(playerHp <=0){
+                this.add.image(640, 360,'gameover').setScrollFactor(0);
+                this.physics.pause();
+                return
+        }
 
         let pad = Phaser.Input.Gamepad.Gamepad;
     
@@ -217,10 +226,6 @@ class Scene2 extends Phaser.Scene {
             }
         }
 
-        this.sceneText.setText('Scene '+ playerCoin);
-        this.playerXText.setText('X: '+ Math.round(this.player.x));
-        this.playerYText.setText('Y: '+ Math.round(this.player.y));
-        this.velocityText.setText('X: ' + this.player.body.velocity.x + ' Y: ' + this.player.body.velocity.y);
     }
 
     hitPlayer(player, ennemi){
@@ -231,6 +236,12 @@ class Scene2 extends Phaser.Scene {
             
             if (playerHp > 0){  // Si le joueur est encore en vie après s'être pris le coup
                 this.time.addEvent({ delay: 200, repeat: 9, callback: function(){player.visible = !player.visible;}, callbackScope: this}); // Le joueur passe de visible a non visible toutes les 200ms 9 fois de suite
+                if(playerHp == 2){
+                    this.health .setTexture('hp2');
+                }
+                else if(playerHp == 1){
+                    this.health.setTexture('hp1');
+                }
             }
     
             this.time.addEvent({ delay: 2000, callback: function(){invulnerable = false;}, callbackScope: this});  // Le joueur n'est plus invulnerable après 2000ms

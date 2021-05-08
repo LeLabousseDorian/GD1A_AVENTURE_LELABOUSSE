@@ -18,7 +18,10 @@ class Menu extends Phaser.Scene{
         this.load.image('boot_on', "assets/Boot_on.png");
         this.load.image('sword_off', "assets/Sword_off.png");
         this.load.image('sword_on', "assets/Sword_on.png");
-        
+        this.load.image('hp3', "assets/hp3.png");
+        this.load.image('hp2', "assets/hp2.png");
+        this.load.image('hp1', "assets/hp1.png");
+        this.load.image('gameover', 'assets/gameOver.png')
 
 
         //Tiled

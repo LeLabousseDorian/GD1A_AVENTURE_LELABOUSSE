@@ -39,7 +39,7 @@ class Scene1 extends Phaser.Scene {
 
         this.coins = this.physics.add.group();
         
-        this.sword = this.physics.add.image(850, 675, 'sword').setAngle(-135).setSize(32, 40);
+        this.sword = this.physics.add.image(850, 675, 'sword').setAngle(-135).setSize(32, 60).setOffset(-10, 10);
 
         this.player = this.physics.add.sprite(this.x, this.y, 'player').setSize(28, 15).setOffset(1, 40);
         this.player.setCollideWorldBounds(true);
@@ -60,11 +60,6 @@ class Scene1 extends Phaser.Scene {
 
         this.control.resetControl(this.cursors);
 
-        this.sceneText = this.add.text(16, 16, 'Scene '+ actualScene + ': ' + this.random, { fontSize: '32px', fill: color }).setScrollFactor(0);
-        this.playerXText = this.add.text(16, 48, 'X: '+ this.player.x, { fontSize: '32px', fill: color }).setScrollFactor(0);
-        this.playerYText = this.add.text(16, 80, 'Y: '+ this.player.y, { fontSize: '32px', fill: color }).setScrollFactor(0);
-        this.inputText = this.add.text(16, 144, 'Right: ' + inputP[0] + ' Left: ' + inputP[1] + ' Down: ' + inputP[2] + ' Up: ' + inputP[3], { fontSize: '32px', fill: color }).setScrollFactor(0);
-        this.velocityText = this.add.text(16, 176, 'X: ' + this.player.body.velocity.x + ' Y: ' + this.player.body.velocity.y, { fontSize: '32px', fill: color }).setScrollFactor(0);
         
         //Collider
         //Player
@@ -113,6 +108,17 @@ class Scene1 extends Phaser.Scene {
             this.inventory3 = this.add.image(1150, 200, 'sword_on').setScrollFactor(0);
 
         }
+
+        if(playerHp == 3){
+            this.health = this.add.image(100, 50, 'hp3').setScrollFactor(0).setScale(2);
+        }
+        else if(playerHp == 2){
+            this.health = this.add.image(100, 50, 'hp2').setScrollFactor(0).setScale(2);
+        }
+        else{
+            this.health = this.add.image(100, 50, 'hp1').setScrollFactor(0).setScale(2);
+        }
+
 
         /*var test = this;
 
@@ -181,6 +187,7 @@ class Scene1 extends Phaser.Scene {
             this.inventory3.setTexture('sword_on')
         }
         
+        
 
         /*
         //Si le joueur est en haut
@@ -208,42 +215,8 @@ class Scene1 extends Phaser.Scene {
             this.player.anims.play(this.control.animation(this.player), true);
         }
         
-        this.playerXText.setText('X: '+ Math.round(this.player.x));
-        this.playerYText.setText('Y: '+ Math.round(this.player.y));
-        this.inputText.setText('Right: ' + playerHp + ' Left: ' + inputP[1] + ' Down: ' + inputP[2] + ' Up: ' + inputP[3]);
-        this.velocityText.setText('X: ' + this.player.body.velocity.x + ' Y: ' + this.player.body.velocity.y);
     }
 
-    hitPlayer(player, ennemi){
-        if(!invulnerable)   // Si le joueur n'est pas invulnerable
-        {
-            playerHp --;                    // Le joueur perd un pv
-            invulnerable = true;            // Il deviens invulnerable
-            
-            if (playerHp > 0){  // Si le joueur est encore en vie après s'être pris le coup
-                this.time.addEvent({ delay: 200, repeat: 9, callback: function(){player.visible = !player.visible;}, callbackScope: this}); // Le joueur passe de visible a non visible toutes les 200ms 9 fois de suite
-            }
-    
-            this.time.addEvent({ delay: 2000, callback: function(){invulnerable = false;}, callbackScope: this});  // Le joueur n'est plus invulnerable après 2000ms
-        }
-    }
-
-    killEnnemi(player, ennemis){
-        if(attack){
-            let randomCoin = (Math.floor(Math.random() * 3))+2;
-
-            for (let i = 0; i < randomCoin; i++){
-                let randomx = (Math.floor(Math.random() * 20)-10)*50;
-                let randomy = (Math.floor(Math.random() * 20)-10)*50;
-                this.coin = new Coin(this, 50, ennemis.x, ennemis.y, randomx, randomy);
-                this.coin.body.setSize(26, 36);
-                this.coin.body.setOffset(3, 1);
-                this.coin.anims.play('coin_spin', true);
-            }
-
-            ennemis.destroy();
-        }
-    }
 
     collectCoin(player, coins){
         if (coins._moving == false){
