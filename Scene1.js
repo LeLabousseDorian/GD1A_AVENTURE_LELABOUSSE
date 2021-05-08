@@ -22,9 +22,11 @@ class Scene1 extends Phaser.Scene {
         this.load.image('sky', "assets/sky_ph.png");
         this.load.image('boot', "assets/boot.png");
         this.load.spritesheet('coin', "assets/coinsheet.png", { frameWidth: 32, frameHeight: 26 });
-        this.load.spritesheet('player', 'assets/player.png', {frameWidth: 32, frameHeight: 64});
-        this.load.image('ennemi', 'assets/ennemi_ph.png');
+        this.load.atlas('player', 'assets/player.png', 'assets/player.json');
+        this.load.image('ennemi', 'assets/monstre.png');
         this.load.image('merchant', 'assets/merchant_ph.png');
+        this.load.image('sword', 'assets/sword.png')
+        this.load.image('hitbox', 'assets/hitbox.png')
 
 
         //Tiled
@@ -42,7 +44,7 @@ class Scene1 extends Phaser.Scene {
         this.tileset = this.map.addTilesetImage('TilesetVillage', 'tileset');
 
         this.bot = this.map.createStaticLayer('bot', this.tileset, 0, 0);
-        this.top = this.map.createDynamicLayer('top', this.tileset, 0, 0);
+        this.top = this.map.createDynamicLayer('collision', this.tileset, 0, 0);
 
         this.merchant = this.add.image(2125, 300, 'merchant');
         this.boot = this.physics.add.image(2125, 400, 'item');
@@ -50,17 +52,34 @@ class Scene1 extends Phaser.Scene {
 
         this.key = this.physics.add.image(1000, 800, 'item');
 
+        this.coins = this.physics.add.group();
+        
+        this.sword = this.physics.add.image(400, 270, 'sword').setAngle(-135).setSize(32, 40);
+
+        this.hitbox = this.physics.add.image(0, 0, 'hitbox').setOrigin(0, 0.5).setSize(64, 25);
+
         this.ennemis = this.physics.add.group();
         new Ennemi(this, 400, 700, 'ennemi');
         new Ennemi(this, 1400, 900, 'ennemi');
-        new Ennemi(this, 1000, 800, 'player');
+        new Ennemi(this, 1000, 800, 'ennemi');
 
-        this.coins = this.physics.add.group();
-
-        this.player = this.physics.add.sprite(this.x, this.y, 'player').setSize(28, 15).setOffset(1, 40).setDepth(10);
+        this.player = this.physics.add.sprite(this.x, this.y, 'player').setSize(28, 15).setOffset(1, 40);
         this.player.setCollideWorldBounds(true);
+
+        this.player.on('animationcomplete', function(){ //  Autorise le personnage à bouger uniquement quand l'animation d'attaque se fini
+            attack = false;
+        });
+    
+
+        this.visual = this.map.createDynamicLayer('visual', this.tileset, 0, 0);
         
-        this.cursors = this.input.keyboard.createCursorKeys();
+        this.cursors = this.input.keyboard.addKeys({ 'up': Phaser.Input.Keyboard.KeyCodes.UP,
+            'down': Phaser.Input.Keyboard.KeyCodes.DOWN, 
+            'left': Phaser.Input.Keyboard.KeyCodes.LEFT,
+            'right': Phaser.Input.Keyboard.KeyCodes.RIGHT,
+            'space' : Phaser.Input.Keyboard.KeyCodes.SPACE
+        });
+
         this.control.resetControl(this.cursors);
 
         this.sceneText = this.add.text(16, 16, 'Scene '+ actualScene + ': ' + this.random, { fontSize: '32px', fill: color }).setScrollFactor(0);
@@ -71,12 +90,13 @@ class Scene1 extends Phaser.Scene {
         
         //Collider
         //Player
-        this.physics.add.collider(this.player, this.platforms);
-        this.physics.add.overlap(this.player, this.ennemis, this.killEnnemi, null, this);
+        this.physics.add.overlap(this.player, this.ennemis, this.hitPlayer, null, this);
         this.physics.add.overlap(this.player, this.coins, this.collectCoin, null, this);
         this.physics.add.collider(this.player, this.top);
         this.physics.add.overlap(this.player, this.boot, this.getBoot, null, this);
         this.physics.add.overlap(this.player, this.key, this.getKey, null, this);
+        this.physics.add.overlap(this.player, this.sword, this.getSword, null, this);
+        this.physics.add.overlap(this.hitbox, this.ennemis, this.killEnnemi, null, this);
 
         //Ennemis
         this.physics.add.collider(this.ennemis, this.top);
@@ -89,38 +109,102 @@ class Scene1 extends Phaser.Scene {
         //this.top.setCollision([385, 306]);
         //this.top.setCollisionByExclusion(-1, true);
 
-        this.top.setTileLocationCallback(60, 23, 1, 1, ()=>{
-            if (key){
-                this.scene.start('scene2', {playerX: this.player.x , playerY: this.player.y, maxSpeed: this.maxSpeed})}
+        this.top.setTileLocationCallback(61, 12, 1, 1, ()=>{
+            if (knife){
+                knife = false;
+                this.scene.start('scene2', {x: this.player.x , y: this.player.y, maxSpeed: this.maxSpeed})}
         })
         
-
         this.camera = this.cameras.main.setSize(1280,720);
         this.camera.startFollow(this.player, true, 0.08, 0.08);
         this.camera.setBounds(0, 0, 2400, 1600);
 
         this.anims.create({
             key: 'left',
-            frames: this.anims.generateFrameNumbers('player', { start: 3, end: 5 }),
+            frames: this.anims.generateFrameNames('player', {
+                prefix: 'left',
+                start: 1,
+                end: 3,
+                zeroPad: 1
+            }),
             frameRate: 5,
         });
 
         this.anims.create({
             key: 'right',
-            frames: this.anims.generateFrameNumbers('player', { start: 6, end: 8 }),
+            frames: this.anims.generateFrameNames('player', {
+                prefix: 'right',
+                start: 1,
+                end: 3,
+                zeroPad: 1
+            }),
             frameRate: 5,
         });
 
         this.anims.create({
             key: 'up',
-            frames: this.anims.generateFrameNumbers('player', { start: 9, end: 11 }),
+            frames: this.anims.generateFrameNames('player', {
+                prefix: 'up',
+                start: 1,
+                end: 3,
+                zeroPad: 1
+            }),
             frameRate: 5,
         });
 
         this.anims.create({
             key: 'down',
-            frames: this.anims.generateFrameNumbers('player', { start: 0, end: 2 }),
+            frames: this.anims.generateFrameNames('player', {
+                prefix: 'down',
+                start: 1,
+                end: 3,
+                zeroPad: 1
+            }),
             frameRate: 5,
+        });
+
+        this.anims.create({
+            key: 'leftAttack',
+            frames: this.anims.generateFrameNames('player', {
+                prefix: 'attackLeft',
+                start: 1,
+                end: 2,
+                zeroPad: 1
+            }),
+            frameRate: 2,
+        });
+
+        this.anims.create({
+            key: 'rightAttack',
+            frames: this.anims.generateFrameNames('player', {
+                prefix: 'attackRight',
+                start: 1,
+                end: 2,
+                zeroPad: 1
+            }),
+            frameRate: 2,
+        });
+
+        this.anims.create({
+            key: 'upAttack',
+            frames: this.anims.generateFrameNames('player', {
+                prefix: 'attackUp',
+                start: 1,
+                end: 2,
+                zeroPad: 1
+            }),
+            frameRate: 2,
+        });
+
+        this.anims.create({
+            key: 'downAttack',
+            frames: this.anims.generateFrameNames('player', {
+                prefix: 'attackDown',
+                start: 1,
+                end: 2,
+                zeroPad: 1
+            }),
+            frameRate: 2,
         });
 
         this.anims.create({
@@ -129,15 +213,9 @@ class Scene1 extends Phaser.Scene {
             frameRate: 10,
             repeat: -1
         });
-    
-        /*this.anims.create({
-            key: 'turn',
-            frames: [ { key: 'dude', frame: 4 } ],
-            frameRate: 20
-        });*/
+
 
         /*var test = this;
-        var i = 0
 
         this.ennemis.children.iterate(function (child) {
             test.tweens.add({
@@ -187,6 +265,33 @@ class Scene1 extends Phaser.Scene {
             this.sceneText.setText('X: ' + this.player.x + ' Y: ' + ennemi.movement(this.player));
         }
 
+        if(attack){
+            if(direction =='left'){
+                this.hitbox.setSize(64, 25)
+                this.hitbox.x = this.player.x-32;
+                this.hitbox.y = this.player.y+5;
+            }
+
+            if(direction =='right'){
+                this.hitbox.setSize(64, 25)
+                this.hitbox.x = this.player.x+32;
+                this.hitbox.y = this.player.y+5;
+            }
+
+            if(direction =='up'){
+                this.hitbox.setSize(25, 64)
+                this.hitbox.x = this.player.x+5;
+                this.hitbox.y = this.player.y-34;
+            }
+
+            if(direction =='down'){
+                this.hitbox.setSize(25, 64)
+                this.hitbox.x = this.player.x-5;
+                this.hitbox.y = this.player.y+34;
+            }
+        }
+        
+
         /*
         //Si le joueur est en haut
         if (this.player.y < this.player.height){
@@ -209,7 +314,7 @@ class Scene1 extends Phaser.Scene {
             //Y
             this.control.movementJ(this.control.inputJoueur(this.cursors, inputP, pad, xAxis, yAxis), this.player,this.playerSpeed, this.maxSpeed)[1]);
         
-        if(this.player.body.velocity.x != 0 || this.player.body.velocity.y != 0){
+        if(this.player.body.velocity.x != 0 || this.player.body.velocity.y != 0 || attack){
             this.player.anims.play(this.control.animation(this.player), true);
         }
         
@@ -219,7 +324,7 @@ class Scene1 extends Phaser.Scene {
         this.velocityText.setText('X: ' + this.player.body.velocity.x + ' Y: ' + this.player.body.velocity.y);
     }
 
-    killEnnemi(player, ennemis){
+    hitPlayer(player, ennemi){
         if(!invulnerable)   // Si le joueur n'est pas invulnerable
         {
             playerHp --;                    // Le joueur perd un pv
@@ -231,19 +336,23 @@ class Scene1 extends Phaser.Scene {
     
             this.time.addEvent({ delay: 2000, callback: function(){invulnerable = false;}, callbackScope: this});  // Le joueur n'est plus invulnerable après 2000ms
         }
-            
-        let randomCoin = (Math.floor(Math.random() * 3))+2;
+    }
 
-        for (let i = 0; i < randomCoin; i++){
-            let randomx = (Math.floor(Math.random() * 20)-10)*50;
-            let randomy = (Math.floor(Math.random() * 20)-10)*50;
-            this.coin = new Coin(this, 50, ennemis.x, ennemis.y, randomx, randomy);
-            this.coin.body.setSize(26, 36)
-            this.coin.body.setOffset(3, 1)
-            this.coin.anims.play('coin_spin', true)
+    killEnnemi(player, ennemis){
+        if(attack){
+            let randomCoin = (Math.floor(Math.random() * 3))+2;
+
+            for (let i = 0; i < randomCoin; i++){
+                let randomx = (Math.floor(Math.random() * 20)-10)*50;
+                let randomy = (Math.floor(Math.random() * 20)-10)*50;
+                this.coin = new Coin(this, 50, ennemis.x, ennemis.y, randomx, randomy);
+                this.coin.body.setSize(26, 36)
+                this.coin.body.setOffset(3, 1)
+                this.coin.anims.play('coin_spin', true)
+            }
+
+            ennemis.destroy();
         }
-
-        ennemis.destroy();
     }
 
     collectCoin(player, coins){
@@ -256,7 +365,7 @@ class Scene1 extends Phaser.Scene {
     getBoot(player, boots){
 
         if (playerCoin >= 150){ 
-            this.maxSpeed += 250;
+            this.maxSpeed += 100;
             playerCoin -= 150;
             boots.destroy();
             this.priceBoot.destroy();
@@ -264,10 +373,15 @@ class Scene1 extends Phaser.Scene {
         }
     }
 
-    getKey(player, keyy){
+    getKey(player, weapon){
         this.map.replaceByIndex(385, 297, 60, 23, 1, 1, 1);
-        key = true; 
-        keyy.destroy();
+        knife = true; 
+        weapon.destroy();
+    }
+
+    getSword(player, swordd){
+        swordd.destroy()
+        sword = true;
     }
     
 }

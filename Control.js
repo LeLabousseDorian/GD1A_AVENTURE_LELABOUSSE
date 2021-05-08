@@ -7,14 +7,7 @@ class Control extends Phaser.Scene{
     inputJoueur(cursors, inputP, pad, xAxis, yAxis){
         //Input
             
-        if (pad.A && boot){
-            inputP[4] = true;
-        }
-
-        else{
-            inputP[4] = false;
-        }
-        
+        inputP[4] = cursors.space.isDown || pad.X ? true : false;
 
         //Le joueur appuie sur Droite(Clavier) ou pad Droite/stick vers la Droite(Manette)
         inputP[0] = cursors.right.isDown || pad.right || xAxis > 0.4 ? true : false;
@@ -34,10 +27,7 @@ class Control extends Phaser.Scene{
     movementJ(inputP, player, playerSpeed, maxSpeed){
         //Logic
 
-        if (inputP[4]){
-            maxSpeed += 250;
-        }
-
+        
         //Si le joueur se déplace en diagonale, sa vitesse est réduite
         if (player.body.velocity.x != 0 && player.body.velocity.y != 0){
             playerSpeed = maxSpeed*0.66;
@@ -47,11 +37,17 @@ class Control extends Phaser.Scene{
             playerSpeed = maxSpeed;
         }
 
+        if (inputP[4] && sword){
+            attack = true;
+        }
+
         if (inputP[0]){
+            direction = 'right'
             player.setVelocityX(playerSpeed);
         }
         
         if (inputP[1]){
+            direction = 'left'
             player.setVelocityX(-playerSpeed);
         }
 
@@ -64,10 +60,12 @@ class Control extends Phaser.Scene{
         }
 
         if (inputP[2]){
+            direction = 'down'
             player.setVelocityY(playerSpeed);
         }
 
         if (inputP[3]){
+            direction = 'up'
             player.setVelocityY(-playerSpeed);
         }
         
@@ -83,6 +81,27 @@ class Control extends Phaser.Scene{
     }
 
     animation(player){
+
+        if (attack){
+
+            if(direction == 'down'){
+                return 'downAttack';
+            }
+
+            if(direction == 'up'){
+                return 'upAttack'; 
+            }
+
+            if(direction == 'left'){
+                return 'leftAttack';
+            }
+
+            if(direction == 'right'){
+                return 'rightAttack';
+            }
+            
+        }
+
         if (player.body.velocity.x > 0){
             return 'right'
         }
@@ -98,6 +117,7 @@ class Control extends Phaser.Scene{
         if (player.body.velocity.y < 0){
             return 'up'
         }
+        
 
     }
 

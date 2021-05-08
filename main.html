@@ -26,8 +26,12 @@ var x;
 var y;
 var boot = false;
 var key = false;
+var knife = false;
 var invulnerable = false;
 var playerHp = 3;
+var direction = "down";
+var sword = false;
+var attack = false;
 
 var widthScreen = 3200;
 var heightScreen = 2400;
@@ -35,7 +39,7 @@ var heightScreen = 2400;
 var playerCoin = 100;
 
 //Création des input du joueur, false par defaut
-var inputP = [false, false, false, false, false]; //Right, Left, Down, Up
+var inputP = [false, false, false, false, false]; //Right, Left, Down, Up, Space/X
 var color = '#000';
 var xAxis = 0;  //Stick xAxys
 var yAxis = 0;  //Stick xAxys
